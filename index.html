@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>투자 계산기 모음 — 평단가·물타기·수익률·손절가</title>
+<meta name="description" content="물타기 평단가, 목표 평단을 위한 추가 매수금, 수익률, 손절·익절가를 한 곳에서 바로 계산하세요. 주식·코인 투자 계산기.">
+<!-- ═══════════════════════════════════════════════════════
+  [운영 메모]
+  · 애널리틱스: Cloudflare Web Analytics (배포 후 켜기)
+  · 광고 자리: .ad-slot — 전역 후 애드센스 코드 삽입
+    (복무 중에는 비워둘 것)
+  · SEO: 탭마다 검색어가 다름 — "평단가 계산기", "물타기 계산기",
+    "수익률 계산기", "손절가 계산기". title/description에 다 녹임
+  · 확장 아이디어: 분할매수 시뮬레이터, 스테이킹 복리, 환율반영 수익률
+═══════════════════════════════════════════════════════ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0e14; --card:#141925; --line:#222a3a;
+  --ink:#e8edf6; --sub:#8b96ad;
+  --up:#f6465d; --down:#2ebd85;   /* 한국식: 상승 빨강 / 하락 초록 */
+  --accent:#3b82f6; --accent2:#60a5fa;
+  --radius:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'IBM Plex Sans KR',sans-serif;background:var(--bg);color:var(--ink);min-height:100dvh;line-height:1.6}
+.wrap{max-width:520px;margin:0 auto;padding:28px 18px 60px}
+header{text-align:center;margin-bottom:22px}
+h1{font-size:23px;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--accent2)}
+.lede{font-size:13px;color:var(--sub);margin-top:7px}
+
+/* 탭 */
+.tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:20px}
+.tab{flex:1;font-family:inherit;font-size:13px;font-weight:600;color:var(--sub);background:none;border:none;border-radius:8px;padding:10px 4px;cursor:pointer;transition:all .15s}
+.tab.on{background:var(--accent);color:#fff}
+.tab:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+
+/* 패널 */
+.panel{display:none}
+.panel.on{display:block}
+.panel-desc{font-size:13px;color:var(--sub);margin-bottom:16px;word-break:keep-all}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink)}
+.field .row{display:flex;align-items:center;gap:8px}
+.field input{
+  flex:1;width:100%;font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;
+  background:var(--card);border:1.5px solid var(--line);border-radius:11px;
+  padding:13px 14px;color:var(--ink);
+}
+.field input:focus{outline:none;border-color:var(--accent)}
+.field .suffix{font-size:13px;color:var(--sub);min-width:30px}
+
+/* 결과 */
+.result{
+  margin-top:20px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px;text-align:center;
+}
+.result .lab{font-size:12px;color:var(--sub);letter-spacing:.04em}
+.result .big{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:700;margin-top:6px;word-break:break-all}
+.result .sub{font-size:13px;color:var(--sub);margin-top:8px;min-height:20px}
+.result .big.up{color:var(--up)}
+.result .big.down{color:var(--down)}
+.result.empty .big{color:var(--sub);font-size:18px}
+
+.ad-slot{margin-top:24px;border:1px dashed var(--line);border-radius:12px;padding:26px;text-align:center;font-size:11px;color:var(--sub);letter-spacing:.05em}
+.disclaimer{margin-top:22px;font-size:11px;line-height:1.7;color:var(--sub);border-top:1px solid var(--line);padding-top:14px;word-break:keep-all}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>투자 <em>계산기</em> 모음</h1>
+  <p class="lede">평단가 · 물타기 · 수익률 · 손절가를 한 곳에서</p>
+</header>
+
+<div class="tabs">
+  <button class="tab on" data-tab="avg">평단가</button>
+  <button class="tab" data-tab="target">목표평단</button>
+  <button class="tab" data-tab="roi">수익률</button>
+  <button class="tab" data-tab="stop">손절·익절</button>
+</div>
+
+<!-- ① 평단가(물타기) -->
+<section class="panel on" id="p-avg">
+  <p class="panel-desc">지금 보유한 평단·수량에, 추가로 살 가격·수량을 넣으면 새 평단가가 나와요.</p>
+  <div class="field"><label>기존 평단가</label>
+    <div class="row"><input type="number" inputmode="decimal" id="a-p1" placeholder="0" oninput="calcAvg()"><span class="suffix">원</span></div></div>
+  <div class="field"><label>기존 보유 수량</label>
+    <div class="row"><input type="number" inputmode="decimal" id="a-q1" placeholder="0" oninput="calcAvg()"><span class="suffix">개</span></div></div>
+  <div class="field"><label>추가 매수가</label>
+    <div class="row"><input type="number" inputmode="decimal" id="a-p2" placeholder="0" oninput="calcAvg()"><span class="suffix">원</span></div></div>
+  <div class="field"><label>추가 매수 수량</label>
+    <div class="row"><input type="number" inputmode="decimal" id="a-q2" placeholder="0" oninput="calcAvg()"><span class="suffix">개</span></div></div>
+  <div class="result empty" id="r-avg"><div class="lab">새 평단가</div><div class="big">값을 입력하세요</div><div class="sub"></div></div>
+</section>
+
+<!-- ② 목표평단 역산 -->
+<section class="panel" id="p-target">
+  <p class="panel-desc">"평단을 ○○원까지 낮추려면, 지금 시세에 얼마나 더 사야 하나?"를 역으로 계산해요.</p>
+  <div class="field"><label>기존 평단가</label>
+    <div class="row"><input type="number" inputmode="decimal" id="t-p1" placeholder="0" oninput="calcTarget()"><span class="suffix">원</span></div></div>
+  <div class="field"><label>기존 보유 수량</label>
+    <div class="row"><input type="number" inputmode="decimal" id="t-q1" placeholder="0" oninput="calcTarget()"><span class="suffix">개</span></div></div>
+  <div class="field"><label>현재 시세 (추가 매수가)</label>
+    <div class="row"><input type="number" inputmode="decimal" id="t-now" placeholder="0" oninput="calcTarget()"><span class="suffix">원</span></div></div>
+  <div class="field"><label>목표 평단가</label>
+    <div class="row"><input type="number" inputmode="decimal" id="t-goal" placeholder="0" oninput="calcTarget()"><span class="suffix">원</span></div></div>
+  <div class="result empty" id="r-target"><div class="lab">추가로 매수할 수량 / 금액</div><div class="big">값을 입력하세요</div><div class="sub"></div></div>
+</section>
+
+<!-- ③ 수익률 -->
+<section class="panel" id="p-roi">
+  <p class="panel-desc">매수가와 현재가를 넣으면 수익률과 손익 금액이 나와요.</p>
+  <div class="field"><label>매수 평단가</label>
+    <div class="row"><input type="number" inputmode="decimal" id="o-buy" placeholder="0" oninput="calcRoi()"><span class="suffix">원</span></div></div>
+  <div class="field"><label>현재가</label>
+    <div class="row"><input type="number" inputmode="decimal" id="o-now" placeholder="0" oninput="calcRoi()"><span class="suffix">원</span></div></div>
+  <div class="field"><label>보유 수량</label>
+    <div class="row"><input type="number" inputmode="decimal" id="o-qty" placeholder="0" oninput="calcRoi()"><span class="suffix">개</span></div></div>
+  <div class="result empty" id="r-roi"><div class="lab">수익률</div><div class="big">값을 입력하세요</div><div class="sub"></div></div>
+</section>
+
+<!-- ④ 손절·익절가 -->
+<section class="panel" id="p-stop">
+  <p class="panel-desc">매수가 기준으로 원하는 손절·익절 퍼센트의 목표 가격을 계산해요.</p>
+  <div class="field"><label>매수 평단가</label>
+    <div class="row"><input type="number" inputmode="decimal" id="s-buy" placeholder="0" oninput="calcStop()"><span class="suffix">원</span></div></div>
+  <div class="field"><label>손절 기준 (-%)</label>
+    <div class="row"><input type="number" inputmode="decimal" id="s-loss" placeholder="예: 10" oninput="calcStop()"><span class="suffix">%</span></div></div>
+  <div class="field"><label>익절 기준 (+%)</label>
+    <div class="row"><input type="number" inputmode="decimal" id="s-gain" placeholder="예: 20" oninput="calcStop()"><span class="suffix">%</span></div></div>
+  <div class="result empty" id="r-stop"><div class="lab">목표 가격</div><div class="big">값을 입력하세요</div><div class="sub"></div></div>
+</section>
+
+<div class="ad-slot">광고 자리 · 전역 후 애드센스 코드 삽입 (현재 비활성)</div>
+<p class="disclaimer">⚕️ 본 계산기는 단순 수치 계산 도구이며 투자 권유나 자문이 아닙니다. 실제 거래 시 수수료·세금·슬리피지로 결과가 달라질 수 있습니다. 모든 투자 판단과 책임은 본인에게 있습니다.</p>
+
+</div>
+
+<script>
+/* ── 공통 도우미 ── */
+const $ = id => document.getElementById(id);
+const num = id => parseFloat($(id).value);        // 입력칸 값을 숫자로
+const ok  = v => !isNaN(v) && isFinite(v);         // 유효한 숫자인지
+const won = n => Math.round(n).toLocaleString("ko-KR"); // 1000 → "1,000"
+
+/* ── 탭 전환 ── */
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("on"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("on"));
+    btn.classList.add("on");
+    $("p-" + btn.dataset.tab).classList.add("on");
+  });
+});
+
+/* ── ① 평단가 ── */
+function calcAvg(){
+  const p1=num("a-p1"), q1=num("a-q1"), p2=num("a-p2"), q2=num("a-q2");
+  const box=$("r-avg"), big=box.querySelector(".big"), sub=box.querySelector(".sub");
+  if(![p1,q1,p2,q2].every(ok) || (q1+q2)<=0){
+    box.classList.add("empty"); big.textContent="값을 입력하세요"; sub.textContent=""; return;
+  }
+  const avg = (p1*q1 + p2*q2)/(q1+q2);
+  const totalCost = p1*q1 + p2*q2;
+  box.classList.remove("empty");
+  big.textContent = won(avg)+"원";
+  sub.textContent = `총 ${q1+q2}개 · 투자금 ${won(totalCost)}원`;
+}
+
+/* ── ② 목표평단 역산 ──
+   목표평단 G로 만들려면 필요한 추가수량 x:
+   (p1*q1 + now*x) / (q1+x) = G   →   x = q1*(p1-G) / (G-now)        */
+function calcTarget(){
+  const p1=num("t-p1"), q1=num("t-q1"), now=num("t-now"), G=num("t-goal");
+  const box=$("r-target"), big=box.querySelector(".big"), sub=box.querySelector(".sub");
+  box.classList.add("empty"); sub.textContent="";
+  if(![p1,q1,now,G].every(ok) || q1<=0){ big.textContent="값을 입력하세요"; return; }
+  // 논리 체크: 물타기(추매가 < 평단)인데 목표가 그 사이에 없으면 불가능
+  if(now>=p1){ big.textContent="추매가가 평단 이상"; sub.textContent="이 경우 평단은 오히려 올라가요"; return; }
+  if(G<=now || G>=p1){ big.textContent="목표평단 범위 오류"; sub.textContent=`목표는 ${won(now)}원 ~ ${won(p1)}원 사이여야 해요`; return; }
+  const x = q1*(p1-G)/(G-now);
+  box.classList.remove("empty");
+  big.textContent = Math.ceil(x)+"개";
+  sub.textContent = `약 ${won(Math.ceil(x)*now)}원 더 매수 (시세 ${won(now)}원 기준)`;
+}
+
+/* ── ③ 수익률 ── */
+function calcRoi(){
+  const buy=num("o-buy"), now=num("o-now"), qty=num("o-qty");
+  const box=$("r-roi"), big=box.querySelector(".big"), sub=box.querySelector(".sub");
+  if(![buy,now].every(ok) || buy<=0){
+    box.classList.add("empty"); big.className="big"; big.textContent="값을 입력하세요"; sub.textContent=""; return;
+  }
+  const roi=(now-buy)/buy*100;
+  box.classList.remove("empty");
+  const up = roi>=0;
+  big.className = "big " + (up?"up":"down");        // 한국식 색
+  big.textContent = (up?"+":"")+roi.toFixed(2)+"%";
+  if(ok(qty) && qty>0){
+    const pnl=(now-buy)*qty;
+    sub.textContent = `손익 ${up?"+":""}${won(pnl)}원 · 평가금 ${won(now*qty)}원`;
+  } else sub.textContent = "수량을 넣으면 손익 금액도 계산돼요";
+}
+
+/* ── ④ 손절·익절 ── */
+function calcStop(){
+  const buy=num("s-buy"), loss=num("s-loss"), gain=num("s-gain");
+  const box=$("r-stop"), big=box.querySelector(".big"), sub=box.querySelector(".sub");
+  if(!ok(buy) || buy<=0){
+    box.classList.add("empty"); big.textContent="값을 입력하세요"; sub.textContent=""; return;
+  }
+  box.classList.remove("empty");
+  const parts=[];
+  if(ok(loss)) parts.push(`손절 ${won(buy*(1-loss/100))}원`);
+  if(ok(gain)) parts.push(`익절 ${won(buy*(1+gain/100))}원`);
+  if(parts.length){
+    big.style.fontSize="22px";
+    big.textContent = parts.join("  /  ");
+    sub.textContent = `매수가 ${won(buy)}원 기준`;
+  } else { big.textContent="손절·익절 %를 입력"; sub.textContent=""; }
+}
+</script>
+</body>
+</html>
