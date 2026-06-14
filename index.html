@@ -3,230 +3,278 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>투자 계산기 모음 — 평단가·물타기·수익률·손절가</title>
-<meta name="description" content="물타기 평단가, 목표 평단을 위한 추가 매수금, 수익률, 손절·익절가를 한 곳에서 바로 계산하세요. 주식·코인 투자 계산기.">
+<title>오늘의 코인 심리 — 공포탐욕지수·김프·시세 한눈에</title>
+<meta name="description" content="오늘 코인 시장이 공포냐 탐욕이냐? 공포탐욕지수, 비트·이더·솔라나 실시간 시세, 김치프리미엄을 한 장의 카드로. 캡처해서 공유하세요.">
 <!-- ═══════════════════════════════════════════════════════
   [운영 메모]
-  · 애널리틱스: Cloudflare Web Analytics (배포 후 켜기)
-  · 광고 자리: .ad-slot — 전역 후 애드센스 코드 삽입
-    (복무 중에는 비워둘 것)
-  · SEO: 탭마다 검색어가 다름 — "평단가 계산기", "물타기 계산기",
-    "수익률 계산기", "손절가 계산기". title/description에 다 녹임
-  · 확장 아이디어: 분할매수 시뮬레이터, 스테이킹 복리, 환율반영 수익률
+  · 데이터 소스 (전부 무료·키 불필요·브라우저 직접 fetch):
+    - 공포탐욕지수: api.alternative.me/fng (하루 1회 갱신) ※ 출처표기 필수
+    - 시세: api.upbit.com/v1/ticker (실시간, 원화)
+    - 김프: 업비트(KRW) vs 바이낸스(USDT) + 환율로 계산
+  · 광고 자리: .ad-slot — 전역 후 애드센스 (복무 중 비활성)
+  · 바이럴 설계: '이미지 저장' → 워터마크 박힌 카드 → 커뮤니티 역유입
+  · 던질 때 ?from= 파라미터로 유입경로 추적 (펨코=fmk, 디시=dc 등)
 ═══════════════════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0b0e14; --card:#141925; --line:#222a3a;
-  --ink:#e8edf6; --sub:#8b96ad;
-  --up:#f6465d; --down:#2ebd85;   /* 한국식: 상승 빨강 / 하락 초록 */
-  --accent:#3b82f6; --accent2:#60a5fa;
-  --radius:16px;
+  --bg:#0a0c12; --card:#13161f; --line:#242936;
+  --ink:#eef1f7; --sub:#8089a0;
+  --red:#f6465d; --green:#19c37d;
+  --gold:#ffcb3d;
+  --radius:18px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'IBM Plex Sans KR',sans-serif;background:var(--bg);color:var(--ink);min-height:100dvh;line-height:1.6}
-.wrap{max-width:520px;margin:0 auto;padding:28px 18px 60px}
-header{text-align:center;margin-bottom:22px}
-h1{font-size:23px;font-weight:700;letter-spacing:-.02em}
-h1 em{font-style:normal;color:var(--accent2)}
-.lede{font-size:13px;color:var(--sub);margin-top:7px}
+.wrap{max-width:460px;margin:0 auto;padding:24px 16px 60px}
+.head{text-align:center;margin-bottom:18px}
+.head h1{font-size:20px;font-weight:700;letter-spacing:-.01em}
+.head p{font-size:12.5px;color:var(--sub);margin-top:5px}
 
-/* 탭 */
-.tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:20px}
-.tab{flex:1;font-family:inherit;font-size:13px;font-weight:600;color:var(--sub);background:none;border:none;border-radius:8px;padding:10px 4px;cursor:pointer;transition:all .15s}
-.tab.on{background:var(--accent);color:#fff}
-.tab:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
-
-/* 패널 */
-.panel{display:none}
-.panel.on{display:block}
-.panel-desc{font-size:13px;color:var(--sub);margin-bottom:16px;word-break:keep-all}
-
-.field{margin-bottom:14px}
-.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink)}
-.field .row{display:flex;align-items:center;gap:8px}
-.field input{
-  flex:1;width:100%;font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;
-  background:var(--card);border:1.5px solid var(--line);border-radius:11px;
-  padding:13px 14px;color:var(--ink);
+/* 캡처 대상 카드 */
+#card{
+  background:linear-gradient(160deg,#161a26,#0e1118);
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:24px 22px 20px;position:relative;overflow:hidden;
 }
-.field input:focus{outline:none;border-color:var(--accent)}
-.field .suffix{font-size:13px;color:var(--sub);min-width:30px}
-
-/* 결과 */
-.result{
-  margin-top:20px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  padding:20px;text-align:center;
+#card.fear::before, #card.greed::before{
+  content:"";position:absolute;inset:0;opacity:.13;pointer-events:none;
 }
-.result .lab{font-size:12px;color:var(--sub);letter-spacing:.04em}
-.result .big{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:700;margin-top:6px;word-break:break-all}
-.result .sub{font-size:13px;color:var(--sub);margin-top:8px;min-height:20px}
-.result .big.up{color:var(--up)}
-.result .big.down{color:var(--down)}
-.result.empty .big{color:var(--sub);font-size:18px}
+#card.fear::before{background:radial-gradient(circle at 50% 0%,var(--red),transparent 65%)}
+#card.greed::before{background:radial-gradient(circle at 50% 0%,var(--green),transparent 65%)}
 
-.ad-slot{margin-top:24px;border:1px dashed var(--line);border-radius:12px;padding:26px;text-align:center;font-size:11px;color:var(--sub);letter-spacing:.05em}
-.disclaimer{margin-top:22px;font-size:11px;line-height:1.7;color:var(--sub);border-top:1px solid var(--line);padding-top:14px;word-break:keep-all}
+.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;position:relative}
+.card-top .label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--sub)}
+.card-top .date{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--sub)}
+
+/* 공포탐욕 메인 */
+.fng{text-align:center;position:relative;margin-bottom:20px}
+.fng .gauge-wrap{position:relative;width:200px;height:110px;margin:0 auto 8px}
+.fng canvas{width:200px;height:110px}
+.fng .score{
+  position:absolute;left:0;right:0;bottom:6px;
+  font-family:'Black Han Sans',sans-serif;font-size:46px;line-height:1;
+}
+.fng .verdict{font-family:'Black Han Sans',sans-serif;font-size:24px;letter-spacing:.02em}
+.fng .one-liner{font-size:12.5px;color:var(--sub);margin-top:6px;word-break:keep-all;padding:0 6px}
+
+/* 시세 */
+.prices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;position:relative}
+.coin{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:11px 8px;text-align:center}
+.coin .sym{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--sub)}
+.coin .px{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;margin-top:3px;word-break:break-all}
+.coin .chg{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;margin-top:2px}
+.coin .chg.up{color:var(--red)} .coin .chg.down{color:var(--green)}
+
+/* 김프 */
+.kimp{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;position:relative}
+.kimp .k-label{font-size:12.5px;color:var(--sub)}
+.kimp .k-val{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700}
+.kimp .k-val.up{color:var(--red)} .kimp .k-val.down{color:var(--green)}
+
+.watermark{margin-top:16px;display:flex;justify-content:space-between;align-items:center;position:relative}
+.watermark .site{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:var(--ink);opacity:.85}
+.watermark .src{font-size:9.5px;color:var(--sub)}
+
+.loading{text-align:center;color:var(--sub);font-size:13px;padding:30px 0}
+
+/* 버튼 */
+.actions{display:flex;gap:10px;margin-top:16px}
+.btn{flex:1;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:12px;padding:14px;cursor:pointer;transition:transform .12s}
+.btn:active{transform:scale(.97)}
+.btn-save{background:linear-gradient(135deg,var(--gold),#ff9d2e);color:#1a1205}
+.btn-refresh{background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line);flex:0 0 auto;padding:14px 18px}
+
+.ad-slot{margin-top:20px;border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;font-size:11px;color:var(--sub)}
+.note{margin-top:18px;font-size:10.5px;line-height:1.7;color:var(--sub);border-top:1px solid var(--line);padding-top:12px;word-break:keep-all}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(16px);background:var(--gold);color:#1a1205;font-size:13px;font-weight:700;padding:12px 22px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<header>
-  <h1>투자 <em>계산기</em> 모음</h1>
-  <p class="lede">평단가 · 물타기 · 수익률 · 손절가를 한 곳에서</p>
-</header>
-
-<div class="tabs">
-  <button class="tab on" data-tab="avg">평단가</button>
-  <button class="tab" data-tab="target">목표평단</button>
-  <button class="tab" data-tab="roi">수익률</button>
-  <button class="tab" data-tab="stop">손절·익절</button>
+<div class="head">
+  <h1>오늘의 코인 심리 🪙</h1>
+  <p>공포탐욕지수 · 시세 · 김치프리미엄을 한 장으로</p>
 </div>
 
-<!-- ① 평단가(물타기) -->
-<section class="panel on" id="p-avg">
-  <p class="panel-desc">지금 보유한 평단·수량에, 추가로 살 가격·수량을 넣으면 새 평단가가 나와요.</p>
-  <div class="field"><label>기존 평단가</label>
-    <div class="row"><input type="number" inputmode="decimal" id="a-p1" placeholder="0" oninput="calcAvg()"><span class="suffix">원</span></div></div>
-  <div class="field"><label>기존 보유 수량</label>
-    <div class="row"><input type="number" inputmode="decimal" id="a-q1" placeholder="0" oninput="calcAvg()"><span class="suffix">개</span></div></div>
-  <div class="field"><label>추가 매수가</label>
-    <div class="row"><input type="number" inputmode="decimal" id="a-p2" placeholder="0" oninput="calcAvg()"><span class="suffix">원</span></div></div>
-  <div class="field"><label>추가 매수 수량</label>
-    <div class="row"><input type="number" inputmode="decimal" id="a-q2" placeholder="0" oninput="calcAvg()"><span class="suffix">개</span></div></div>
-  <div class="result empty" id="r-avg"><div class="lab">새 평단가</div><div class="big">값을 입력하세요</div><div class="sub"></div></div>
-</section>
+<!-- 캡처될 카드 -->
+<div id="card">
+  <div class="card-top">
+    <span class="label">CRYPTO SENTIMENT</span>
+    <span class="date" id="date">—</span>
+  </div>
 
-<!-- ② 목표평단 역산 -->
-<section class="panel" id="p-target">
-  <p class="panel-desc">"평단을 ○○원까지 낮추려면, 지금 시세에 얼마나 더 사야 하나?"를 역으로 계산해요.</p>
-  <div class="field"><label>기존 평단가</label>
-    <div class="row"><input type="number" inputmode="decimal" id="t-p1" placeholder="0" oninput="calcTarget()"><span class="suffix">원</span></div></div>
-  <div class="field"><label>기존 보유 수량</label>
-    <div class="row"><input type="number" inputmode="decimal" id="t-q1" placeholder="0" oninput="calcTarget()"><span class="suffix">개</span></div></div>
-  <div class="field"><label>현재 시세 (추가 매수가)</label>
-    <div class="row"><input type="number" inputmode="decimal" id="t-now" placeholder="0" oninput="calcTarget()"><span class="suffix">원</span></div></div>
-  <div class="field"><label>목표 평단가</label>
-    <div class="row"><input type="number" inputmode="decimal" id="t-goal" placeholder="0" oninput="calcTarget()"><span class="suffix">원</span></div></div>
-  <div class="result empty" id="r-target"><div class="lab">추가로 매수할 수량 / 금액</div><div class="big">값을 입력하세요</div><div class="sub"></div></div>
-</section>
+  <div id="card-body">
+    <div class="loading" id="loading">데이터 불러오는 중…</div>
 
-<!-- ③ 수익률 -->
-<section class="panel" id="p-roi">
-  <p class="panel-desc">매수가와 현재가를 넣으면 수익률과 손익 금액이 나와요.</p>
-  <div class="field"><label>매수 평단가</label>
-    <div class="row"><input type="number" inputmode="decimal" id="o-buy" placeholder="0" oninput="calcRoi()"><span class="suffix">원</span></div></div>
-  <div class="field"><label>현재가</label>
-    <div class="row"><input type="number" inputmode="decimal" id="o-now" placeholder="0" oninput="calcRoi()"><span class="suffix">원</span></div></div>
-  <div class="field"><label>보유 수량</label>
-    <div class="row"><input type="number" inputmode="decimal" id="o-qty" placeholder="0" oninput="calcRoi()"><span class="suffix">개</span></div></div>
-  <div class="result empty" id="r-roi"><div class="lab">수익률</div><div class="big">값을 입력하세요</div><div class="sub"></div></div>
-</section>
+    <div id="content" style="display:none">
+      <div class="fng">
+        <div class="gauge-wrap">
+          <canvas id="gauge" width="200" height="110"></canvas>
+          <div class="score" id="fng-score">--</div>
+        </div>
+        <div class="verdict" id="fng-verdict">—</div>
+        <div class="one-liner" id="fng-line">—</div>
+      </div>
 
-<!-- ④ 손절·익절가 -->
-<section class="panel" id="p-stop">
-  <p class="panel-desc">매수가 기준으로 원하는 손절·익절 퍼센트의 목표 가격을 계산해요.</p>
-  <div class="field"><label>매수 평단가</label>
-    <div class="row"><input type="number" inputmode="decimal" id="s-buy" placeholder="0" oninput="calcStop()"><span class="suffix">원</span></div></div>
-  <div class="field"><label>손절 기준 (-%)</label>
-    <div class="row"><input type="number" inputmode="decimal" id="s-loss" placeholder="예: 10" oninput="calcStop()"><span class="suffix">%</span></div></div>
-  <div class="field"><label>익절 기준 (+%)</label>
-    <div class="row"><input type="number" inputmode="decimal" id="s-gain" placeholder="예: 20" oninput="calcStop()"><span class="suffix">%</span></div></div>
-  <div class="result empty" id="r-stop"><div class="lab">목표 가격</div><div class="big">값을 입력하세요</div><div class="sub"></div></div>
-</section>
+      <div class="prices" id="prices"></div>
 
-<div class="ad-slot"></div>
-<p class="disclaimer">⚕️ 본 계산기는 단순 수치 계산 도구이며 투자 권유나 자문이 아닙니다. 실제 거래 시 수수료·세금·슬리피지로 결과가 달라질 수 있습니다. 모든 투자 판단과 책임은 본인에게 있습니다.</p>
+      <div class="kimp">
+        <span class="k-label">김치프리미엄 (BTC)</span>
+        <span class="k-val" id="kimp-val">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="watermark">
+    <span class="site">today-coin.kr</span>
+    <span class="src">데이터: alternative.me · upbit · binance</span>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-save" id="btn-save">📸 이미지로 저장</button>
+  <button class="btn btn-refresh" id="btn-refresh">↻</button>
+</div>
+
+<div class="ad-slot">광고 자리 · 전역 후 애드센스 (현재 비활성)</div>
+
+<p class="note">
+  본 정보는 참고용이며 투자 권유가 아닙니다. 공포탐욕지수는 하루 1회 갱신됩니다(출처: alternative.me).
+  시세는 업비트·바이낸스 공개 API 기준이며 실제 거래가와 차이가 있을 수 있습니다. 투자 판단과 책임은 본인에게 있습니다.
+</p>
 
 </div>
+<div class="toast" id="toast">이미지가 저장됐어요 📸</div>
 
 <script>
-/* ── 공통 도우미 ── */
 const $ = id => document.getElementById(id);
-const num = id => parseFloat($(id).value);        // 입력칸 값을 숫자로
-const ok  = v => !isNaN(v) && isFinite(v);         // 유효한 숫자인지
-const won = n => Math.round(n).toLocaleString("ko-KR"); // 1000 → "1,000"
 
-/* ── 탭 전환 ── */
-document.querySelectorAll(".tab").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach(b => b.classList.remove("on"));
-    document.querySelectorAll(".panel").forEach(p => p.classList.remove("on"));
-    btn.classList.add("on");
-    $("p-" + btn.dataset.tab).classList.add("on");
+/* 공포탐욕 지수 → 한국어 판정 + 한 줄 멘트 */
+function verdictOf(v){
+  if(v<=24) return {txt:"극단적 공포", cls:"fear", line:"피가 낭자할 때가 기회였다는 말, 들어는 봤제? (역사적으로 바닥 구간)"};
+  if(v<=44) return {txt:"공포", cls:"fear", line:"다들 무서워서 던지는 중. 존버의 가치가 시험받는 구간."};
+  if(v<=55) return {txt:"중립", cls:"", line:"눈치 게임 중. 시장도 너도 갈팡질팡."};
+  if(v<=74) return {txt:"탐욕", cls:"greed", line:"분위기 좋다고 막 들어가면 꼭지 잡는 거 한순간이다."};
+  return {txt:"극단적 탐욕", cls:"greed", line:"모두가 환호할 때가 가장 위험하다는 격언, 기억하자."};
+}
+
+/* 반원 게이지 그리기 */
+function drawGauge(value){
+  const cv = $("gauge"), ctx = cv.getContext("2d");
+  const dpr = window.devicePixelRatio||1;
+  cv.width=200*dpr; cv.height=110*dpr; ctx.scale(dpr,dpr);
+  const cx=100, cy=100, r=80;
+  // 배경 호
+  ctx.lineWidth=14; ctx.lineCap="round";
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI,2*Math.PI); ctx.strokeStyle="#222838"; ctx.stroke();
+  // 값 호 (색은 값에 따라)
+  const ang = Math.PI + (value/100)*Math.PI;
+  let col = value<=44 ? "#f6465d" : value<=55 ? "#ffcb3d" : "#19c37d";
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI,ang); ctx.strokeStyle=col;
+  ctx.shadowColor=col; ctx.shadowBlur=12; ctx.stroke();
+}
+
+const won = n => Number(n).toLocaleString("ko-KR");
+
+/* 메인 로드 */
+async function load(){
+  $("loading").style.display="block";
+  $("content").style.display="none";
+  $("date").textContent = new Date().toLocaleDateString("ko-KR",{month:"long",day:"numeric"});
+
+  try{
+    // 1) 공포탐욕지수
+    const fngRes = await fetch("https://api.alternative.me/fng/?limit=1");
+    const fngJson = await fngRes.json();
+    const fng = parseInt(fngJson.data[0].value);
+
+    // 2) 업비트 시세 (BTC/ETH/SOL) — 원화
+    const upRes = await fetch("https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-ETH,KRW-SOL");
+    const up = await upRes.json();
+
+    // 3) 김프용 바이낸스 BTC(USDT) + 환율
+    let kimp = null;
+    try{
+      const [binRes, fxRes] = await Promise.all([
+        fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"),
+        fetch("https://api.exchangerate-api.com/v4/latest/USD")
+      ]);
+      const bin = await binRes.json();
+      const fx = await fxRes.json();
+      const krwPerUsd = fx.rates.KRW;
+      const upbitBtc = up.find(c=>c.market==="KRW-BTC").trade_price;
+      const binBtcKrw = parseFloat(bin.price) * krwPerUsd;
+      kimp = (upbitBtc - binBtcKrw) / binBtcKrw * 100;
+    }catch(e){ kimp = null; } // 김프 실패해도 나머지는 표시
+
+    render(fng, up, kimp);
+  }catch(e){
+    $("loading").textContent = "데이터를 불러오지 못했어요. ↻ 눌러 다시 시도해주세요.";
+  }
+}
+
+function render(fng, up, kimp){
+  // 공포탐욕
+  const v = verdictOf(fng);
+  $("card").className = v.cls;
+  $("fng-score").textContent = fng;
+  $("fng-verdict").textContent = v.txt;
+  $("fng-line").textContent = v.line;
+  drawGauge(fng);
+
+  // 시세 카드
+  const names = {"KRW-BTC":"BTC","KRW-ETH":"ETH","KRW-SOL":"SOL"};
+  const box = $("prices"); box.innerHTML="";
+  ["KRW-BTC","KRW-ETH","KRW-SOL"].forEach(m=>{
+    const c = up.find(x=>x.market===m);
+    const chg = (c.signed_change_rate*100);
+    const upDown = chg>=0 ? "up":"down";
+    const sign = chg>=0 ? "+":"";
+    const div = document.createElement("div");
+    div.className="coin";
+    div.innerHTML=`<div class="sym">${names[m]}</div>
+      <div class="px">₩${won(c.trade_price)}</div>
+      <div class="chg ${upDown}">${sign}${chg.toFixed(2)}%</div>`;
+    box.appendChild(div);
   });
+
+  // 김프
+  const kv = $("kimp-val");
+  if(kimp===null){ kv.textContent="—"; kv.className="k-val"; }
+  else{
+    const ud = kimp>=0?"up":"down";
+    kv.textContent = (kimp>=0?"+":"")+kimp.toFixed(2)+"%";
+    kv.className = "k-val "+ud;
+  }
+
+  $("loading").style.display="none";
+  $("content").style.display="block";
+}
+
+/* 이미지 저장 (html2canvas) */
+$("btn-save").addEventListener("click", async ()=>{
+  try{
+    const canvas = await html2canvas($("card"), {backgroundColor:"#0a0c12", scale:2});
+    const link = document.createElement("a");
+    link.download = "today-coin.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+    $("toast").classList.add("on");
+    setTimeout(()=>$("toast").classList.remove("on"),2000);
+  }catch(e){
+    alert("이미지 저장에 실패했어요. 스크린샷으로 대신 찍어주세요!");
+  }
 });
 
-/* ── ① 평단가 ── */
-function calcAvg(){
-  const p1=num("a-p1"), q1=num("a-q1"), p2=num("a-p2"), q2=num("a-q2");
-  const box=$("r-avg"), big=box.querySelector(".big"), sub=box.querySelector(".sub");
-  if(![p1,q1,p2,q2].every(ok) || (q1+q2)<=0){
-    box.classList.add("empty"); big.textContent="값을 입력하세요"; sub.textContent=""; return;
-  }
-  const avg = (p1*q1 + p2*q2)/(q1+q2);
-  const totalCost = p1*q1 + p2*q2;
-  box.classList.remove("empty");
-  big.textContent = won(avg)+"원";
-  sub.textContent = `총 ${q1+q2}개 · 투자금 ${won(totalCost)}원`;
-}
-
-/* ── ② 목표평단 역산 ──
-   목표평단 G로 만들려면 필요한 추가수량 x:
-   (p1*q1 + now*x) / (q1+x) = G   →   x = q1*(p1-G) / (G-now)        */
-function calcTarget(){
-  const p1=num("t-p1"), q1=num("t-q1"), now=num("t-now"), G=num("t-goal");
-  const box=$("r-target"), big=box.querySelector(".big"), sub=box.querySelector(".sub");
-  box.classList.add("empty"); sub.textContent="";
-  if(![p1,q1,now,G].every(ok) || q1<=0){ big.textContent="값을 입력하세요"; return; }
-  // 논리 체크: 물타기(추매가 < 평단)인데 목표가 그 사이에 없으면 불가능
-  if(now>=p1){ big.textContent="추매가가 평단 이상"; sub.textContent="이 경우 평단은 오히려 올라가요"; return; }
-  if(G<=now || G>=p1){ big.textContent="목표평단 범위 오류"; sub.textContent=`목표는 ${won(now)}원 ~ ${won(p1)}원 사이여야 해요`; return; }
-  const x = q1*(p1-G)/(G-now);
-  box.classList.remove("empty");
-  big.textContent = Math.ceil(x)+"개";
-  sub.textContent = `약 ${won(Math.ceil(x)*now)}원 더 매수 (시세 ${won(now)}원 기준)`;
-}
-
-/* ── ③ 수익률 ── */
-function calcRoi(){
-  const buy=num("o-buy"), now=num("o-now"), qty=num("o-qty");
-  const box=$("r-roi"), big=box.querySelector(".big"), sub=box.querySelector(".sub");
-  if(![buy,now].every(ok) || buy<=0){
-    box.classList.add("empty"); big.className="big"; big.textContent="값을 입력하세요"; sub.textContent=""; return;
-  }
-  const roi=(now-buy)/buy*100;
-  box.classList.remove("empty");
-  const up = roi>=0;
-  big.className = "big " + (up?"up":"down");        // 한국식 색
-  big.textContent = (up?"+":"")+roi.toFixed(2)+"%";
-  if(ok(qty) && qty>0){
-    const pnl=(now-buy)*qty;
-    sub.textContent = `손익 ${up?"+":""}${won(pnl)}원 · 평가금 ${won(now*qty)}원`;
-  } else sub.textContent = "수량을 넣으면 손익 금액도 계산돼요";
-}
-
-/* ── ④ 손절·익절 ── */
-function calcStop(){
-  const buy=num("s-buy"), loss=num("s-loss"), gain=num("s-gain");
-  const box=$("r-stop"), big=box.querySelector(".big"), sub=box.querySelector(".sub");
-  if(!ok(buy) || buy<=0){
-    box.classList.add("empty"); big.textContent="값을 입력하세요"; sub.textContent=""; return;
-  }
-  box.classList.remove("empty");
-  const parts=[];
-  if(ok(loss)) parts.push(`손절 ${won(buy*(1-loss/100))}원`);
-  if(ok(gain)) parts.push(`익절 ${won(buy*(1+gain/100))}원`);
-  if(parts.length){
-    big.style.fontSize="22px";
-    big.textContent = parts.join("  /  ");
-    sub.textContent = `매수가 ${won(buy)}원 기준`;
-  } else { big.textContent="손절·익절 %를 입력"; sub.textContent=""; }
-}
+$("btn-refresh").addEventListener("click", load);
+load();
 </script>
 </body>
 </html>
