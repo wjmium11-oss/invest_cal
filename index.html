@@ -88,12 +88,14 @@ h1 em{font-style:normal;color:var(--green)}
 .rec.caution{border-left:4px solid var(--caution);background:linear-gradient(to right,var(--caution-soft),var(--card) 38%)}
 .rec.ok{border-left:4px solid var(--ok);background:linear-gradient(to right,var(--ok-soft),var(--card) 38%)}
 .rec.low{border-left:4px solid var(--low);background:linear-gradient(to right,var(--low-soft),var(--card) 38%)}
+.rec.low2{border-left:4px solid #d9b54a;background:linear-gradient(to right,#fbf5e3,var(--card) 38%)}
 .rec .top{display:flex;justify-content:space-between;align-items:center}
 .rec .nm{font-size:14.5px;font-weight:700}
 .rec .amt{font-family:'IBM Plex Mono',monospace;font-size:14.5px;font-weight:700}
 .rec .verdict{font-size:12px;font-weight:600;margin-top:2px}
 .rec.warn .verdict{color:var(--warn)} .rec.caution .verdict{color:var(--caution)}
 .rec.ok .verdict{color:var(--ok)} .rec.low .verdict{color:var(--low)}
+.rec.low2 .verdict{color:#b8901f}
 .rec .bar{height:6px;border-radius:999px;background:#eef3f0;margin-top:8px;overflow:hidden}
 .rec .bar i{display:block;height:100%;border-radius:999px}
 .rec .scale{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--sub);margin-top:4px;display:flex;justify-content:space-between}
@@ -263,10 +265,20 @@ function renderProducts(){
 /* ───── 판정 ───── */
 function judge(key,total){
   const v=NUT[key];
-  if(v.ul&&total>v.ul) return {cls:"warn",txt:"상한 초과 ⚠️",pct:100,color:"var(--warn)"};
-  if(v.ul&&total>=v.ul*0.7) return {cls:"caution",txt:"상한에 근접",pct:total/v.ul*100,color:"var(--caution)"};
-  if(total<v.rec*0.5) return {cls:"low",txt:"권장량보다 적음",pct:Math.max(total/v.rec*50,6),color:"var(--low)"};
-  return {cls:"ok",txt:"적정 범위 ✓",pct:v.ul?Math.max(total/v.ul*100,8):55,color:"var(--ok)"};
+  if(v.ul){
+    // ── 상한 기준 있는 영양소 ──
+    if(total>v.ul) return {cls:"warn",txt:"상한 초과 ⚠️",pct:100,color:"var(--warn)"};
+    if(total>=v.ul*0.7) return {cls:"caution",txt:"상한에 근접",pct:total/v.ul*100,color:"var(--caution)"};
+    if(total<v.rec*0.5) return {cls:"low",txt:"권장량보다 적음",pct:Math.max(total/v.rec*50,6),color:"var(--low)"};
+    return {cls:"ok",txt:"적정 범위 ✓",pct:Math.max(total/v.ul*100,8),color:"var(--ok)"};
+  } else {
+    // ── 상한 기준 없는 영양소 (권장 배수로 판정) ──
+    const ratio = total / v.rec;
+    if(ratio >= 10) return {cls:"caution",txt:"권장량 크게 초과 (상한 기준 없음)",pct:100,color:"var(--caution)"};
+    if(ratio >= 3)  return {cls:"low2",txt:"권장량보다 많음 (상한 기준 없음)",pct:Math.min(ratio/10*100,100),color:"#c79a2e"};
+    if(ratio < 0.5) return {cls:"low",txt:"권장량보다 적음",pct:Math.max(ratio*50,6),color:"var(--low)"};
+    return {cls:"ok",txt:"적정 범위 ✓ (상한 기준 없음)",pct:Math.min(ratio/3*55,55),color:"var(--ok)"};
+  }
 }
 
 function currentSum(){
@@ -285,11 +297,14 @@ function renderCard(){
   box.innerHTML="";
   keys.forEach(key=>{
     const v=NUT[key],total=sum[key],j=judge(key,total);
-    const scaleR=v.ul?"상한 "+v.ul.toLocaleString()+v.unit:"권장 "+v.rec.toLocaleString()+v.unit;
+    const scaleR=v.ul?"상한 "+v.ul.toLocaleString()+v.unit:"권장 "+v.rec.toLocaleString()+v.unit+" (상한 없음)";
+    const refTxt=v.ul
+      ? `권장 ${v.rec.toLocaleString()}${v.unit} / 상한 ${v.ul.toLocaleString()}${v.unit}`
+      : `권장 ${v.rec.toLocaleString()}${v.unit} · 상한 기준 없음`;
     const div=document.createElement("div");
     div.className=`rec ${j.cls}`;
     div.innerHTML=`<div class="top"><span class="nm">${v.name}</span><span class="amt">${total.toLocaleString()}${v.unit}</span></div>
-      <div class="verdict">${j.txt} · 권장 ${v.rec.toLocaleString()}${v.unit}${v.ul?" / 상한 "+v.ul.toLocaleString()+v.unit:""}</div>
+      <div class="verdict">${j.txt} · ${refTxt}</div>
       <div class="bar"><i style="width:${Math.min(j.pct,100)}%;background:${j.color}"></i></div>
       <div class="scale"><span>0</span><span>${scaleR}</span></div>`;
     box.appendChild(div);
@@ -307,8 +322,9 @@ $("btn-copy").addEventListener("click",async()=>{
   let lines=[`📋 영양소 섭취 판정 (${date})`,`먹은 영양제: ${taken}`,"━━━━━━━━━━━━"];
   keys.forEach(key=>{
     const v=NUT[key],total=sum[key],j=judge(key,total);
-    const mark=j.cls==="warn"?"⚠️":j.cls==="caution"?"🔶":j.cls==="low"?"🔹":"✅";
-    lines.push(`${mark} ${v.name} ${total.toLocaleString()}${v.unit} — ${j.txt} (권장 ${v.rec.toLocaleString()}${v.unit}${v.ul?"/상한 "+v.ul.toLocaleString()+v.unit:""})`);
+    const mark=j.cls==="warn"?"⚠️":j.cls==="caution"?"🔶":j.cls==="low2"?"🟡":j.cls==="low"?"🔹":"✅";
+    const ref=v.ul?`권장 ${v.rec.toLocaleString()}${v.unit}/상한 ${v.ul.toLocaleString()}${v.unit}`:`권장 ${v.rec.toLocaleString()}${v.unit}·상한 없음`;
+    lines.push(`${mark} ${v.name} ${total.toLocaleString()}${v.unit} — ${j.txt} (${ref})`);
   });
   lines.push("━━━━━━━━━━━━","※ 공식 기준 대비 일반 정보 · 처방 아님");
   const text=lines.join("\n");
