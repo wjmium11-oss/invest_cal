@@ -3,94 +3,112 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>오늘의 코인 심리 — 공포탐욕지수·김프·시세 한눈에</title>
-<meta name="description" content="오늘 코인 시장이 공포냐 탐욕이냐? 공포탐욕지수, 비트·이더·솔라나 실시간 시세, 김치프리미엄을 한 장의 카드로. 캡처해서 공유하세요.">
+<title>영양소 섭취 판정기 — 내 영양제, 기준에 맞나?</title>
+<meta name="description" content="먹는 영양제를 등록하고 체크하면, 성분 총량이 공식 권장량·상한 대비 어디쯤인지 판정해드려요. 결과는 텍스트·이미지로 저장하세요.">
 <!-- ═══════════════════════════════════════════════════════
   [운영 메모]
-  · 데이터 소스 (전부 무료·키 불필요·브라우저 직접 fetch):
-    - 공포탐욕지수: api.alternative.me/fng (하루 1회 갱신) ※ 출처표기 필수
-    - 시세: api.upbit.com/v1/ticker (실시간, 원화)
-    - 김프: 업비트(KRW) vs 바이낸스(USDT) + 환율로 계산
-  · 광고 자리: .ad-slot — 전역 후 애드센스 (복무 중 비활성)
-  · 바이럴 설계: '이미지 저장' → 워터마크 박힌 카드 → 커뮤니티 역유입
-  · 던질 때 ?from= 파라미터로 유입경로 추적 (펨코=fmk, 디시=dc 등)
+  · 저장 안 함(세션 메모리만). 새로고침 시 초기화.
+    → 추후 추가 예정: 브라우저 저장 / 구성 텍스트 내보내기·불러오기
+  · 사용자 입력형: 제품 성분을 사용자가 직접 입력 → 제품 DB 불필요, 검수 부담 0
+  · 기준 출처: 2020 한국인 영양소 섭취기준+식약처 일일섭취량 ⚠️배포 전 검수
+  · 안전선: 정보 제공만, 처방 금지. 면책 유지
 ═══════════════════════════════════════════════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0a0c12; --card:#13161f; --line:#242936;
-  --ink:#eef1f7; --sub:#8089a0;
-  --red:#f6465d; --green:#19c37d;
-  --gold:#ffcb3d;
-  --radius:18px;
+  --bg:#f4f8f6; --card:#fff; --line:#e1eae5;
+  --ink:#1a2a24; --sub:#5e7068;
+  --green:#0e7a5f; --mint:#15b08a; --mint-soft:#e6f6f0;
+  --warn:#d9534a; --warn-soft:#fdeeec;
+  --caution:#d98e2b; --caution-soft:#fcf3e6;
+  --ok:#15a06e; --ok-soft:#e8f7ef;
+  --low:#5b8def; --low-soft:#eaf1fd;
+  --radius:16px;
+  --shadow:0 1px 3px rgba(26,42,36,.06), 0 6px 18px rgba(26,42,36,.05);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'IBM Plex Sans KR',sans-serif;background:var(--bg);color:var(--ink);min-height:100dvh;line-height:1.6}
-.wrap{max-width:460px;margin:0 auto;padding:24px 16px 60px}
-.head{text-align:center;margin-bottom:18px}
-.head h1{font-size:20px;font-weight:700;letter-spacing:-.01em}
-.head p{font-size:12.5px;color:var(--sub);margin-top:5px}
+.wrap{max-width:540px;margin:0 auto;padding:26px 16px 64px}
+header{text-align:center;margin-bottom:18px}
+.mark{display:inline-flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.16em;color:var(--green);border:1px solid var(--line);background:var(--card);padding:6px 13px;border-radius:999px;margin-bottom:13px}
+.mark::before{content:"";width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--mint),var(--green))}
+h1{font-size:22px;font-weight:700;letter-spacing:-.01em;word-break:keep-all}
+h1 em{font-style:normal;color:var(--green)}
+.lede{font-size:13px;color:var(--sub);margin-top:7px;word-break:keep-all}
 
-/* 캡처 대상 카드 */
-#card{
-  background:linear-gradient(160deg,#161a26,#0e1118);
-  border:1px solid var(--line);border-radius:var(--radius);
-  padding:24px 22px 20px;position:relative;overflow:hidden;
-}
-#card.fear::before, #card.greed::before{
-  content:"";position:absolute;inset:0;opacity:.13;pointer-events:none;
-}
-#card.fear::before{background:radial-gradient(circle at 50% 0%,var(--red),transparent 65%)}
-#card.greed::before{background:radial-gradient(circle at 50% 0%,var(--green),transparent 65%)}
+.step{display:flex;align-items:baseline;gap:9px;margin:24px 0 12px}
+.step b{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--green);letter-spacing:.06em}
+.step h2{font-size:16px;font-weight:700}
+.step .hint{font-size:11.5px;color:var(--sub)}
 
-.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;position:relative}
-.card-top .label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--sub)}
-.card-top .date{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--sub)}
+/* 내 영양제 목록 */
+.prod-list{display:flex;flex-direction:column;gap:9px;margin-bottom:12px}
+.prod{background:var(--card);border:1.5px solid var(--line);border-radius:13px;padding:12px 14px;box-shadow:var(--shadow)}
+.prod.on{border-color:var(--green);background:var(--mint-soft)}
+.prod .ph{display:flex;align-items:center;gap:11px}
+.prod .chk{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line);background:var(--card);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;cursor:pointer}
+.prod.on .chk{background:var(--green);border-color:var(--green)}
+.prod .pn{flex:1;font-size:14.5px;font-weight:700;cursor:pointer}
+.prod .pdel{background:none;border:none;color:var(--sub);font-size:15px;cursor:pointer;opacity:.5}
+.prod .pdel:hover{opacity:1;color:var(--warn)}
+.prod .ings{font-size:11.5px;color:var(--sub);margin-top:5px;margin-left:33px;word-break:keep-all}
+.add-prod-btn{width:100%;background:var(--card);border:1.5px dashed var(--line);border-radius:13px;padding:14px;font-family:inherit;font-size:14px;font-weight:600;color:var(--green);cursor:pointer}
+.add-prod-btn:hover{background:var(--mint-soft);border-color:var(--mint)}
 
-/* 공포탐욕 메인 */
-.fng{text-align:center;position:relative;margin-bottom:20px}
-.fng .gauge-wrap{position:relative;width:200px;height:110px;margin:0 auto 8px}
-.fng canvas{width:200px;height:110px}
-.fng .score{
-  position:absolute;left:0;right:0;bottom:6px;
-  font-family:'Black Han Sans',sans-serif;font-size:46px;line-height:1;
-}
-.fng .verdict{font-family:'Black Han Sans',sans-serif;font-size:24px;letter-spacing:.02em}
-.fng .one-liner{font-size:12.5px;color:var(--sub);margin-top:6px;word-break:keep-all;padding:0 6px}
+/* 제품 추가 폼 */
+.form{background:var(--card);border:1.5px solid var(--mint);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:12px;display:none}
+.form.on{display:block}
+.form .f-name{width:100%;font-family:inherit;font-size:15px;font-weight:600;border:1.5px solid var(--line);border-radius:11px;padding:12px;margin-bottom:12px}
+.form .f-name:focus{outline:none;border-color:var(--mint)}
+.form .f-label{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:8px}
+.ing-row{display:flex;gap:7px;margin-bottom:8px}
+.ing-row select,.ing-row input{font-family:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--card);color:var(--ink)}
+.ing-row select{flex:1.3;min-width:0}
+.ing-row input{flex:1;width:100%;font-family:'IBM Plex Mono',monospace;font-weight:600;text-align:right}
+.ing-row select:focus,.ing-row input:focus{outline:none;border-color:var(--mint)}
+.ing-row .x{flex:0 0 auto;background:none;border:1.5px solid var(--line);border-radius:10px;color:var(--sub);font-size:14px;padding:0 12px;cursor:pointer}
+.form .more{background:none;border:none;color:var(--green);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:4px 0;margin-bottom:10px}
+.form .f-actions{display:flex;gap:9px}
+.form .f-actions button{flex:1;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:11px;padding:12px;cursor:pointer}
+.form .save{background:linear-gradient(135deg,var(--mint),var(--green));color:#fff}
+.form .cancel{background:var(--bg);color:var(--sub);border:1.5px solid var(--line)}
 
-/* 시세 */
-.prices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;position:relative}
-.coin{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:11px 8px;text-align:center}
-.coin .sym{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--sub)}
-.coin .px{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;margin-top:3px;word-break:break-all}
-.coin .chg{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;margin-top:2px}
-.coin .chg.up{color:var(--red)} .coin .chg.down{color:var(--green)}
+/* 판정 카드 */
+#card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px;box-shadow:var(--shadow)}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.card-head .t{font-size:15px;font-weight:700}
+.card-head .d{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--sub)}
+.records{display:flex;flex-direction:column;gap:10px}
+.empty{padding:24px;text-align:center;font-size:13.5px;color:var(--sub)}
+.rec{border:1px solid var(--line);border-radius:13px;padding:13px 15px}
+.rec.warn{border-left:4px solid var(--warn);background:linear-gradient(to right,var(--warn-soft),var(--card) 38%)}
+.rec.caution{border-left:4px solid var(--caution);background:linear-gradient(to right,var(--caution-soft),var(--card) 38%)}
+.rec.ok{border-left:4px solid var(--ok);background:linear-gradient(to right,var(--ok-soft),var(--card) 38%)}
+.rec.low{border-left:4px solid var(--low);background:linear-gradient(to right,var(--low-soft),var(--card) 38%)}
+.rec .top{display:flex;justify-content:space-between;align-items:center}
+.rec .nm{font-size:14.5px;font-weight:700}
+.rec .amt{font-family:'IBM Plex Mono',monospace;font-size:14.5px;font-weight:700}
+.rec .verdict{font-size:12px;font-weight:600;margin-top:2px}
+.rec.warn .verdict{color:var(--warn)} .rec.caution .verdict{color:var(--caution)}
+.rec.ok .verdict{color:var(--ok)} .rec.low .verdict{color:var(--low)}
+.rec .bar{height:6px;border-radius:999px;background:#eef3f0;margin-top:8px;overflow:hidden}
+.rec .bar i{display:block;height:100%;border-radius:999px}
+.rec .scale{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--sub);margin-top:4px;display:flex;justify-content:space-between}
+.card-foot{margin-top:14px;padding-top:10px;border-top:1px solid var(--line);text-align:center;font-size:10px;color:var(--sub)}
 
-/* 김프 */
-.kimp{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;position:relative}
-.kimp .k-label{font-size:12.5px;color:var(--sub)}
-.kimp .k-val{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700}
-.kimp .k-val.up{color:var(--red)} .kimp .k-val.down{color:var(--green)}
-
-.watermark{margin-top:16px;display:flex;justify-content:space-between;align-items:center;position:relative}
-.watermark .site{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:var(--ink);opacity:.85}
-.watermark .src{font-size:9.5px;color:var(--sub)}
-
-.loading{text-align:center;color:var(--sub);font-size:13px;padding:30px 0}
-
-/* 버튼 */
-.actions{display:flex;gap:10px;margin-top:16px}
+.actions{display:flex;gap:10px;margin-top:14px}
 .btn{flex:1;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:12px;padding:14px;cursor:pointer;transition:transform .12s}
 .btn:active{transform:scale(.97)}
-.btn-save{background:linear-gradient(135deg,var(--gold),#ff9d2e);color:#1a1205}
-.btn-refresh{background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line);flex:0 0 auto;padding:14px 18px}
+.btn-copy{background:var(--card);color:var(--green);border:1.5px solid var(--green)}
+.btn-copy:hover{background:var(--mint-soft)}
+.btn-img{background:linear-gradient(135deg,var(--mint),var(--green));color:#fff}
 
-.ad-slot{margin-top:20px;border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;font-size:11px;color:var(--sub)}
-.note{margin-top:18px;font-size:10.5px;line-height:1.7;color:var(--sub);border-top:1px solid var(--line);padding-top:12px;word-break:keep-all}
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(16px);background:var(--gold);color:#1a1205;font-size:13px;font-weight:700;padding:12px 22px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9}
+.ad-slot{margin-top:22px;border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;font-size:11px;color:var(--sub)}
+.disclaimer{margin-top:22px;font-size:11px;line-height:1.7;color:var(--sub);border-top:1px solid var(--line);padding-top:14px;word-break:keep-all}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:11px 20px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -98,183 +116,218 @@ body{font-family:'IBM Plex Sans KR',sans-serif;background:var(--bg);color:var(--
 <body>
 <div class="wrap">
 
-<div class="head">
-  <h1>오늘의 코인 심리 🪙</h1>
-  <p>공포탐욕지수 · 시세 · 김치프리미엄을 한 장으로</p>
+<header>
+  <div class="mark">NUTRITION CHECK</div>
+  <h1>내 영양제 성분,<br><em>기준</em>에 맞을까?</h1>
+  <p class="lede">먹는 영양제를 등록하고 체크하면 성분 총량을 공식 권장량·상한과 비교해드려요.</p>
+</header>
+
+<div class="step"><b>STEP 1</b><h2>내 영양제 등록</h2><span class="hint">라벨 보고 입력</span></div>
+<div class="prod-list" id="prod-list"></div>
+<button class="add-prod-btn" id="add-prod">+ 영양제 추가하기</button>
+
+<!-- 제품 추가 폼 -->
+<div class="form" id="form">
+  <input type="text" class="f-name" id="f-name" placeholder="영양제 이름 (예: 센트룸 포맨)" aria-label="영양제 이름">
+  <div class="f-label">성분 (라벨에 적힌 1회 섭취량 기준)</div>
+  <div id="ing-rows"></div>
+  <button class="more" id="add-ing">+ 성분 한 줄 더</button>
+  <div class="f-actions">
+    <button class="cancel" id="f-cancel">취소</button>
+    <button class="save" id="f-save">등록</button>
+  </div>
 </div>
 
-<!-- 캡처될 카드 -->
+<div class="step"><b>STEP 2</b><h2 id="rec-title">먹은 영양제 합산 판정</h2></div>
 <div id="card">
-  <div class="card-top">
-    <span class="label">CRYPTO SENTIMENT</span>
-    <span class="date" id="date">—</span>
-  </div>
-
-  <div id="card-body">
-    <div class="loading" id="loading">데이터 불러오는 중…</div>
-
-    <div id="content" style="display:none">
-      <div class="fng">
-        <div class="gauge-wrap">
-          <canvas id="gauge" width="200" height="110"></canvas>
-          <div class="score" id="fng-score">--</div>
-        </div>
-        <div class="verdict" id="fng-verdict">—</div>
-        <div class="one-liner" id="fng-line">—</div>
-      </div>
-
-      <div class="prices" id="prices"></div>
-
-      <div class="kimp">
-        <span class="k-label">김치프리미엄 (BTC)</span>
-        <span class="k-val" id="kimp-val">—</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="watermark">
-    <span class="site">today-coin.kr</span>
-    <span class="src">데이터: alternative.me · upbit · binance</span>
-  </div>
+  <div class="card-head"><span class="t">영양소 섭취 판정</span><span class="d" id="card-date">—</span></div>
+  <div class="records" id="records"><div class="empty">영양제를 등록하고 체크하면 판정 결과가 여기 나와요.</div></div>
+  <div class="card-foot">공식 기준(보건복지부·식약처) 대비 · 일반 성인 기준 · 정보 제공용</div>
 </div>
 
 <div class="actions">
-  <button class="btn btn-save" id="btn-save">📸 이미지로 저장</button>
-  <button class="btn btn-refresh" id="btn-refresh">↻</button>
+  <button class="btn btn-copy" id="btn-copy">📋 텍스트 복사</button>
+  <button class="btn btn-img" id="btn-img">🖼️ 이미지 저장</button>
 </div>
 
 <div class="ad-slot">광고 자리 · 전역 후 애드센스 (현재 비활성)</div>
 
-<p class="note">
-  본 정보는 참고용이며 투자 권유가 아닙니다. 공포탐욕지수는 하루 1회 갱신됩니다(출처: alternative.me).
-  시세는 업비트·바이낸스 공개 API 기준이며 실제 거래가와 차이가 있을 수 있습니다. 투자 판단과 책임은 본인에게 있습니다.
+<p class="disclaimer">
+  ⚕️ 본 도구는 2020 한국인 영양소 섭취기준(보건복지부)·식약처 일일섭취량 기반 <b>일반 정보 제공용</b>이며
+  의학적 진단·처방이 아닙니다. 권장량·상한은 일반 성인 기준으로 연령·성별·건강상태·임신/수유에 따라 다릅니다.
+  복용 약·질환이 있으면 의사·약사와 상담하세요. 입력값은 저장되지 않으며(새로고침 시 초기화), 결과는 복사·이미지로 보관하세요.
 </p>
 
 </div>
-<div class="toast" id="toast">이미지가 저장됐어요 📸</div>
+<div class="toast" id="toast">완료</div>
 
 <script>
+/* ═══ 영양소 기준 DB (⚠️ 배포 전 검수) ═══ */
+const NUT = {
+  vitC:{name:"비타민C",unit:"mg",rec:100,ul:2000},
+  vitD:{name:"비타민D",unit:"IU",rec:600,ul:4000},
+  vitA:{name:"비타민A",unit:"µg",rec:700,ul:3000},
+  vitE:{name:"비타민E",unit:"mg",rec:12,ul:540},
+  vitB1:{name:"비타민B1",unit:"mg",rec:1.2,ul:null},
+  vitB2:{name:"비타민B2",unit:"mg",rec:1.4,ul:null},
+  vitB6:{name:"비타민B6",unit:"mg",rec:1.5,ul:100},
+  vitB12:{name:"비타민B12",unit:"µg",rec:2.4,ul:null},
+  folate:{name:"엽산",unit:"µg",rec:400,ul:1000},
+  niacin:{name:"나이아신",unit:"mg",rec:15,ul:35},
+  ca:{name:"칼슘",unit:"mg",rec:750,ul:2500},
+  mg:{name:"마그네슘",unit:"mg",rec:330,ul:350},
+  fe:{name:"철분",unit:"mg",rec:12,ul:45},
+  zn:{name:"아연",unit:"mg",rec:9,ul:35},
+  se:{name:"셀레늄",unit:"µg",rec:60,ul:400},
+  k:{name:"칼륨",unit:"mg",rec:3500,ul:null},
+  omega3:{name:"오메가3",unit:"mg",rec:1000,ul:2000},
+};
+
 const $ = id => document.getElementById(id);
+let products = [];   // {name, ings:{key:amt}, taken:bool} — 세션 메모리만
+let pid = 0;
 
-/* 공포탐욕 지수 → 한국어 판정 + 한 줄 멘트 */
-function verdictOf(v){
-  if(v<=24) return {txt:"극단적 공포", cls:"fear", line:"피가 낭자할 때가 기회였다는 말, 들어는 봤제? (역사적으로 바닥 구간)"};
-  if(v<=44) return {txt:"공포", cls:"fear", line:"다들 무서워서 던지는 중. 존버의 가치가 시험받는 구간."};
-  if(v<=55) return {txt:"중립", cls:"", line:"눈치 게임 중. 시장도 너도 갈팡질팡."};
-  if(v<=74) return {txt:"탐욕", cls:"greed", line:"분위기 좋다고 막 들어가면 꼭지 잡는 거 한순간이다."};
-  return {txt:"극단적 탐욕", cls:"greed", line:"모두가 환호할 때가 가장 위험하다는 격언, 기억하자."};
+$("card-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric"});
+
+/* 성분 선택 옵션 HTML */
+function optionsHTML(){
+  return Object.entries(NUT).map(([k,v])=>`<option value="${k}">${v.name} (${v.unit})</option>`).join("");
 }
 
-/* 반원 게이지 그리기 */
-function drawGauge(value){
-  const cv = $("gauge"), ctx = cv.getContext("2d");
-  const dpr = window.devicePixelRatio||1;
-  cv.width=200*dpr; cv.height=110*dpr; ctx.scale(dpr,dpr);
-  const cx=100, cy=100, r=80;
-  // 배경 호
-  ctx.lineWidth=14; ctx.lineCap="round";
-  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI,2*Math.PI); ctx.strokeStyle="#222838"; ctx.stroke();
-  // 값 호 (색은 값에 따라)
-  const ang = Math.PI + (value/100)*Math.PI;
-  let col = value<=44 ? "#f6465d" : value<=55 ? "#ffcb3d" : "#19c37d";
-  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI,ang); ctx.strokeStyle=col;
-  ctx.shadowColor=col; ctx.shadowBlur=12; ctx.stroke();
+/* ───── 제품 추가 폼 ───── */
+function newIngRow(){
+  const row=document.createElement("div");
+  row.className="ing-row";
+  row.innerHTML=`<select aria-label="성분">${optionsHTML()}</select>
+    <input type="number" inputmode="decimal" placeholder="양" aria-label="함량">
+    <button class="x" aria-label="삭제">×</button>`;
+  row.querySelector(".x").addEventListener("click",()=>row.remove());
+  return row;
 }
+$("add-prod").addEventListener("click",()=>{
+  $("form").classList.add("on");
+  $("f-name").value="";
+  $("ing-rows").innerHTML="";
+  $("ing-rows").appendChild(newIngRow());
+  $("add-prod").style.display="none";
+  $("f-name").focus();
+});
+$("add-ing").addEventListener("click",()=>$("ing-rows").appendChild(newIngRow()));
+$("f-cancel").addEventListener("click",closeForm);
+function closeForm(){ $("form").classList.remove("on"); $("add-prod").style.display="block"; }
 
-const won = n => Number(n).toLocaleString("ko-KR");
-
-/* 메인 로드 */
-async function load(){
-  $("loading").style.display="block";
-  $("content").style.display="none";
-  $("date").textContent = new Date().toLocaleDateString("ko-KR",{month:"long",day:"numeric"});
-
-  try{
-    // 1) 공포탐욕지수
-    const fngRes = await fetch("https://api.alternative.me/fng/?limit=1");
-    const fngJson = await fngRes.json();
-    const fng = parseInt(fngJson.data[0].value);
-
-    // 2) 업비트 시세 (BTC/ETH/SOL) — 원화
-    const upRes = await fetch("https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-ETH,KRW-SOL");
-    const up = await upRes.json();
-
-    // 3) 김프용 바이낸스 BTC(USDT) + 환율
-    let kimp = null;
-    try{
-      const [binRes, fxRes] = await Promise.all([
-        fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"),
-        fetch("https://api.exchangerate-api.com/v4/latest/USD")
-      ]);
-      const bin = await binRes.json();
-      const fx = await fxRes.json();
-      const krwPerUsd = fx.rates.KRW;
-      const upbitBtc = up.find(c=>c.market==="KRW-BTC").trade_price;
-      const binBtcKrw = parseFloat(bin.price) * krwPerUsd;
-      kimp = (upbitBtc - binBtcKrw) / binBtcKrw * 100;
-    }catch(e){ kimp = null; } // 김프 실패해도 나머지는 표시
-
-    render(fng, up, kimp);
-  }catch(e){
-    $("loading").textContent = "데이터를 불러오지 못했어요. ↻ 눌러 다시 시도해주세요.";
-  }
-}
-
-function render(fng, up, kimp){
-  // 공포탐욕
-  const v = verdictOf(fng);
-  $("card").className = v.cls;
-  $("fng-score").textContent = fng;
-  $("fng-verdict").textContent = v.txt;
-  $("fng-line").textContent = v.line;
-  drawGauge(fng);
-
-  // 시세 카드
-  const names = {"KRW-BTC":"BTC","KRW-ETH":"ETH","KRW-SOL":"SOL"};
-  const box = $("prices"); box.innerHTML="";
-  ["KRW-BTC","KRW-ETH","KRW-SOL"].forEach(m=>{
-    const c = up.find(x=>x.market===m);
-    const chg = (c.signed_change_rate*100);
-    const upDown = chg>=0 ? "up":"down";
-    const sign = chg>=0 ? "+":"";
-    const div = document.createElement("div");
-    div.className="coin";
-    div.innerHTML=`<div class="sym">${names[m]}</div>
-      <div class="px">₩${won(c.trade_price)}</div>
-      <div class="chg ${upDown}">${sign}${chg.toFixed(2)}%</div>`;
-    box.appendChild(div);
+$("f-save").addEventListener("click",()=>{
+  const name=$("f-name").value.trim() || "내 영양제";
+  const ings={};
+  $("ing-rows").querySelectorAll(".ing-row").forEach(row=>{
+    const key=row.querySelector("select").value;
+    const amt=parseFloat(row.querySelector("input").value);
+    if(!isNaN(amt)&&amt>0) ings[key]=(ings[key]||0)+amt;
   });
-
-  // 김프
-  const kv = $("kimp-val");
-  if(kimp===null){ kv.textContent="—"; kv.className="k-val"; }
-  else{
-    const ud = kimp>=0?"up":"down";
-    kv.textContent = (kimp>=0?"+":"")+kimp.toFixed(2)+"%";
-    kv.className = "k-val "+ud;
-  }
-
-  $("loading").style.display="none";
-  $("content").style.display="block";
-}
-
-/* 이미지 저장 (html2canvas) */
-$("btn-save").addEventListener("click", async ()=>{
-  try{
-    const canvas = await html2canvas($("card"), {backgroundColor:"#0a0c12", scale:2});
-    const link = document.createElement("a");
-    link.download = "today-coin.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-    $("toast").classList.add("on");
-    setTimeout(()=>$("toast").classList.remove("on"),2000);
-  }catch(e){
-    alert("이미지 저장에 실패했어요. 스크린샷으로 대신 찍어주세요!");
-  }
+  if(!Object.keys(ings).length){ toast("성분을 하나 이상 입력하세요"); return; }
+  products.push({id:++pid, name, ings, taken:true});
+  closeForm(); renderProducts(); renderCard(); toast("등록됐어요");
 });
 
-$("btn-refresh").addEventListener("click", load);
-load();
+/* ───── 제품 목록 렌더 ───── */
+function renderProducts(){
+  const box=$("prod-list");
+  box.innerHTML="";
+  products.forEach(p=>{
+    const ingStr=Object.entries(p.ings).map(([k,v])=>`${NUT[k].name} ${v}${NUT[k].unit}`).join(" · ");
+    const div=document.createElement("div");
+    div.className="prod"+(p.taken?" on":"");
+    div.innerHTML=`<div class="ph">
+        <span class="chk" data-id="${p.id}">${p.taken?"✓":""}</span>
+        <span class="pn" data-id="${p.id}">${p.name}</span>
+        <button class="pdel" data-id="${p.id}" aria-label="삭제">×</button>
+      </div>
+      <div class="ings">${ingStr}</div>`;
+    box.appendChild(div);
+  });
+  // 체크 토글
+  box.querySelectorAll(".chk,.pn").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const p=products.find(x=>x.id==el.dataset.id);
+      p.taken=!p.taken; renderProducts(); renderCard();
+    });
+  });
+  box.querySelectorAll(".pdel").forEach(b=>{
+    b.addEventListener("click",()=>{
+      products=products.filter(x=>x.id!=b.dataset.id);
+      renderProducts(); renderCard();
+    });
+  });
+}
+
+/* ───── 판정 ───── */
+function judge(key,total){
+  const v=NUT[key];
+  if(v.ul&&total>v.ul) return {cls:"warn",txt:"상한 초과 ⚠️",pct:100,color:"var(--warn)"};
+  if(v.ul&&total>=v.ul*0.7) return {cls:"caution",txt:"상한에 근접",pct:total/v.ul*100,color:"var(--caution)"};
+  if(total<v.rec*0.5) return {cls:"low",txt:"권장량보다 적음",pct:Math.max(total/v.rec*50,6),color:"var(--low)"};
+  return {cls:"ok",txt:"적정 범위 ✓",pct:v.ul?Math.max(total/v.ul*100,8):55,color:"var(--ok)"};
+}
+
+function currentSum(){
+  const sum={};
+  products.filter(p=>p.taken).forEach(p=>{
+    Object.entries(p.ings).forEach(([k,v])=>sum[k]=(sum[k]||0)+v);
+  });
+  return sum;
+}
+
+function renderCard(){
+  const sum=currentSum();
+  const keys=Object.keys(sum);
+  const box=$("records");
+  if(!keys.length){ box.innerHTML=`<div class="empty">영양제를 등록하고 체크하면 판정 결과가 여기 나와요.</div>`; return; }
+  box.innerHTML="";
+  keys.forEach(key=>{
+    const v=NUT[key],total=sum[key],j=judge(key,total);
+    const scaleR=v.ul?"상한 "+v.ul.toLocaleString()+v.unit:"권장 "+v.rec.toLocaleString()+v.unit;
+    const div=document.createElement("div");
+    div.className=`rec ${j.cls}`;
+    div.innerHTML=`<div class="top"><span class="nm">${v.name}</span><span class="amt">${total.toLocaleString()}${v.unit}</span></div>
+      <div class="verdict">${j.txt} · 권장 ${v.rec.toLocaleString()}${v.unit}${v.ul?" / 상한 "+v.ul.toLocaleString()+v.unit:""}</div>
+      <div class="bar"><i style="width:${Math.min(j.pct,100)}%;background:${j.color}"></i></div>
+      <div class="scale"><span>0</span><span>${scaleR}</span></div>`;
+    box.appendChild(div);
+  });
+}
+
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1500);}
+
+/* 텍스트 복사 */
+$("btn-copy").addEventListener("click",async()=>{
+  const sum=currentSum(),keys=Object.keys(sum);
+  if(!keys.length){ toast("먼저 영양제를 체크하세요"); return; }
+  const date=new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric"});
+  const taken=products.filter(p=>p.taken).map(p=>p.name).join(", ");
+  let lines=[`📋 영양소 섭취 판정 (${date})`,`먹은 영양제: ${taken}`,"━━━━━━━━━━━━"];
+  keys.forEach(key=>{
+    const v=NUT[key],total=sum[key],j=judge(key,total);
+    const mark=j.cls==="warn"?"⚠️":j.cls==="caution"?"🔶":j.cls==="low"?"🔹":"✅";
+    lines.push(`${mark} ${v.name} ${total.toLocaleString()}${v.unit} — ${j.txt} (권장 ${v.rec.toLocaleString()}${v.unit}${v.ul?"/상한 "+v.ul.toLocaleString()+v.unit:""})`);
+  });
+  lines.push("━━━━━━━━━━━━","※ 공식 기준 대비 일반 정보 · 처방 아님");
+  const text=lines.join("\n");
+  try{ await navigator.clipboard.writeText(text); }
+  catch(e){ const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove(); }
+  toast("복사됐어요 📋");
+});
+
+/* 이미지 저장 */
+$("btn-img").addEventListener("click",async()=>{
+  if(!Object.keys(currentSum()).length){ toast("먼저 영양제를 체크하세요"); return; }
+  try{
+    const canvas=await html2canvas($("card"),{backgroundColor:"#f4f8f6",scale:2});
+    const a=document.createElement("a");a.download="nutrition-check.png";a.href=canvas.toDataURL("image/png");a.click();
+    toast("이미지 저장됐어요 🖼️");
+  }catch(e){ toast("저장 실패 — 스크린샷 이용"); }
+});
+
+renderProducts(); renderCard();
 </script>
 </body>
 </html>
