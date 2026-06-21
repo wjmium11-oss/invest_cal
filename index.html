@@ -201,7 +201,7 @@ h1 em{font-style:normal;color:var(--green)}
     <div class="pr-field"><label>통 가격</label><input type="number" inputmode="numeric" id="f-price" placeholder="예: 25000"><span>원</span></div>
     <div class="pr-field"><label>총 개수</label><input type="number" inputmode="numeric" id="f-count" placeholder="예: 90"><span>정</span></div>
   </div>
-  <div class="f-hint">가격·개수는 선택이에요. 넣으면 가성비도 계산해드려요.</div>
+  <div class="f-hint">가격·개수는 선택이에요. 넣으면 1회당 가격을 계산해드려요.</div>
   <div class="f-label">성분 (라벨에 적힌 1회 섭취량 기준)</div>
   <div id="ing-rows"></div>
   <button class="more" id="add-ing">+ 성분 한 줄 더</button>
@@ -438,10 +438,8 @@ function renderProducts(){
     const val=valueOf(p);
     let costHTML="";
     if(val){
-      const cls = val.ratio>=1.2 ? "good" : val.ratio>=0.8 ? "mid" : "bad";
-      const label = val.ratio>=1.2 ? "가성비 좋음 👍" : val.ratio>=0.8 ? "적정" : "비싼 편";
-      costHTML=`<div class="cost">💰 1회 ${Math.round(val.perServing).toLocaleString()}원 ·
-        성분가치/가격 <span class="${cls}">${val.ratio.toFixed(2)}배 (${label})</span></div>`;
+      // 가성비(성분가치/가격) 배수는 기준단가 정비 전까지 비표시. 1회당 가격만 표시(정확).
+      costHTML=`<div class="cost">💰 1회 ${Math.round(val.perServing).toLocaleString()}원</div>`;
     }
     const div=document.createElement("div");
     div.className="prod"+(p.taken?" on":"");
