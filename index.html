@@ -84,11 +84,19 @@ h1 em{font-style:normal;color:var(--green)}
 .prod .cost .good{color:var(--ok);font-weight:700}
 .prod .cost .bad{color:var(--warn);font-weight:700}
 .prod .cost .mid{color:var(--sub);font-weight:700}
-.ing-row{display:flex;gap:7px;margin-bottom:8px}
-.ing-row select,.ing-row input{font-family:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--card);color:var(--ink)}
-.ing-row select{flex:1.3;min-width:0}
-.ing-row input{flex:1;width:100%;font-family:'IBM Plex Mono',monospace;font-weight:600;text-align:right}
-.ing-row select:focus,.ing-row input:focus{outline:none;border-color:var(--mint)}
+.ing-row{display:flex;gap:7px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
+.ing-row select{flex:1.3;min-width:0;font-family:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--card);color:var(--ink)}
+.ing-row select:focus{outline:none;border-color:var(--mint)}
+.ing-val{flex:1;min-width:0}
+.ing-row.bg-mode .ing-val{flex-basis:100%;order:3}
+.ing-amt{width:100%;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;text-align:right;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--card);color:var(--ink)}
+.ing-amt:focus{outline:none;border-color:var(--mint)}
+.bgroup-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;background:var(--mint-soft);border-radius:11px;padding:9px}
+.bg-cell{display:flex;align-items:center;gap:5px;border:1.5px solid var(--line);border-radius:9px;padding:0 9px;background:var(--card)}
+.bg-cell label{font-size:11px;color:var(--sub);white-space:nowrap;flex:0 0 auto}
+.bg-cell input{flex:1;width:100%;min-width:0;border:none;background:none;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;text-align:right;padding:9px 0;color:var(--ink)}
+.bg-cell input:focus{outline:none}
+.bg-cell span{font-size:10px;color:var(--sub);flex:0 0 auto}
 .ing-row .x{flex:0 0 auto;background:none;border:1.5px solid var(--line);border-radius:10px;color:var(--sub);font-size:14px;padding:0 12px;cursor:pointer}
 .form .more{background:none;border:none;color:var(--green);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:4px 0;margin-bottom:10px}
 .form .f-actions{display:flex;gap:9px}
@@ -149,7 +157,6 @@ h1 em{font-style:normal;color:var(--green)}
 .btn-copy:hover{background:var(--mint-soft)}
 .btn-img{background:linear-gradient(135deg,var(--mint),var(--green));color:#fff}
 
-.ad-slot{margin-top:22px;border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;font-size:11px;color:var(--sub)}
 .disclaimer{margin-top:22px;font-size:11px;line-height:1.7;color:var(--sub);border-top:1px solid var(--line);padding-top:14px;word-break:keep-all}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:11px 20px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -223,7 +230,7 @@ h1 em{font-style:normal;color:var(--green)}
   <button class="btn btn-img" id="btn-img">🖼️ 이미지 저장</button>
 </div>
 
-<div class="ad-slot">광고 자리 · 애드센스 (현재 비활성)</div>
+
 
 <p class="disclaimer">
   ⚕️ 본 도구는 2025 한국인 영양소 섭취기준(보건복지부·한국영양학회)·식약처 일일섭취량 기반 <b>일반 정보 제공용</b>이며
@@ -243,10 +250,20 @@ h1 em{font-style:normal;color:var(--green)}
    값 우선순위: 권장섭취량(RNI) > 충분섭취량(AI). null이면 공식기준 없음(판정 생략).
    ※ 비타민D는 사용 편의상 IU 표기(1µg=40IU): 10µg→400, 15µg→600, UL 100µg→4000
    ※ 비KDRI 기능성원료(식약처 일일섭취량): 유산균·밀크씨슬·루테인·코큐텐
-   ※ B군복합·K2·글루타치온: 단일 공식기준 없음 → null */
+   ※ B군은 B1·B2·B6·B12·엽산·나이아신 6개로 분리(개별 KDRI 기준). 입력은 'B군 한번에' 묶음 지원
+   ※ K2·글루타치온: 단일 공식기준 없음 → null */
 const NUT = {
   // ── 1단계: 입문 ──
-  vitBcomplex:{name:"비타민B군(복합)",unit:"mg",rec:null,ul:null,tier:1},
+  b1:{name:"비타민B1(티아민)",unit:"mg",rec:1.2,ul:null,tier:1,
+      recByGroup:{ m:[1.2,1.2,1.2,1.1,1.1], f:[1.1,1.1,1.1,1.0,0.8] }},
+  b2:{name:"비타민B2(리보플라빈)",unit:"mg",rec:1.5,ul:null,tier:1,
+      recByGroup:{ m:[1.5,1.5,1.5,1.4,1.4], f:[1.2,1.2,1.2,1.1,1.0] }},
+  b6:{name:"비타민B6",unit:"mg",rec:1.5,ul:100,tier:1,
+      recByGroup:{ m:[1.5,1.5,1.5,1.5,1.5], f:[1.4,1.4,1.4,1.4,1.4] }},
+  b12:{name:"비타민B12",unit:"µg",rec:2.4,ul:null,tier:1},          // 성인 전체 동일
+  folate:{name:"엽산",unit:"µg",rec:400,ul:1000,tier:1},            // 성인 전체 동일
+  niacin:{name:"나이아신(B3)",unit:"mg",rec:14,ul:35,tier:1,        // UL=니코틴산 기준(보수적). 니코틴아미드는 850
+      recByGroup:{ m:[14,14,14,13,12], f:[13,13,13,12,11] }},
   vitC:{name:"비타민C",unit:"mg",rec:100,ul:2000,tier:1},           // 성인 전체 동일
   probio:{name:"유산균",unit:"억 CFU",rec:100,ul:null,tier:1},      // 식약처(비KDRI)
   // ── 2단계: 기초 ──
@@ -296,7 +313,7 @@ const PRICE = {
   folate:0.3, ca:0.1, mg:0.2,
   fe:0.8, zn:1.2, se:0.5, omega3:0.02,
   lutein:30.0, silymarin:0.3, cu:5.0, mn:1.0,
-  // 기준단가 미정(추정 어려움): vitBcomplex, probio, vitK2, coq10, glutathione
+  // 기준단가 미정(추정 어려움): probio, vitK2, coq10, glutathione, b1, b2, b6, b12, niacin
 };
 
 const $ = id => document.getElementById(id);
@@ -339,9 +356,23 @@ function valueOf(p){
 
 $("card-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric"});
 
-/* 성분 선택 옵션 HTML */
+/* 성분 선택 옵션 HTML — 맨 위에 'B군 한번에' 묶음 옵션 추가 */
+const BGROUP_KEYS=['b1','b2','b6','b12','folate','niacin'];
 function optionsHTML(){
-  return Object.entries(NUT).map(([k,v])=>`<option value="${k}">${v.name} (${v.unit})</option>`).join("");
+  const bg=`<option value="bgroup">⭐ 비타민B군 (한번에 입력)</option>`;
+  const rest=Object.entries(NUT).map(([k,v])=>`<option value="${k}">${v.name} (${v.unit})</option>`).join("");
+  return bg+rest;
+}
+
+/* 선택값에 따른 입력 영역 — bgroup이면 B비타민 6칸 그리드 */
+function valAreaHTML(sel){
+  if(sel==='bgroup'){
+    return `<div class="bgroup-grid">`+BGROUP_KEYS.map(k=>
+      `<div class="bg-cell"><label>${NUT[k].name.replace(/\(.*\)/,"")}</label>`+
+      `<input type="number" inputmode="decimal" data-bkey="${k}" placeholder="0"><span>${NUT[k].unit}</span></div>`
+    ).join("")+`</div>`;
+  }
+  return `<input class="ing-amt" type="number" inputmode="decimal" placeholder="양" aria-label="함량">`;
 }
 
 /* ───── 제품 추가 폼 ───── */
@@ -349,8 +380,15 @@ function newIngRow(){
   const row=document.createElement("div");
   row.className="ing-row";
   row.innerHTML=`<select aria-label="성분">${optionsHTML()}</select>
-    <input type="number" inputmode="decimal" placeholder="양" aria-label="함량">
+    <div class="ing-val">${valAreaHTML('bgroup')}</div>
     <button class="x" aria-label="삭제">×</button>`;
+  const sel=row.querySelector("select");
+  sel.value='bgroup';
+  row.classList.add('bg-mode');
+  sel.addEventListener("change",()=>{
+    row.querySelector(".ing-val").innerHTML=valAreaHTML(sel.value);
+    row.classList.toggle('bg-mode', sel.value==='bgroup');
+  });
   row.querySelector(".x").addEventListener("click",()=>row.remove());
   return row;
 }
@@ -372,8 +410,16 @@ $("f-save").addEventListener("click",()=>{
   const ings={};
   $("ing-rows").querySelectorAll(".ing-row").forEach(row=>{
     const key=row.querySelector("select").value;
-    const amt=parseFloat(row.querySelector("input").value);
-    if(!isNaN(amt)&&amt>0) ings[key]=(ings[key]||0)+amt;
+    if(key==='bgroup'){
+      // B군 묶음: 각 B비타민 칸을 개별 성분으로 저장
+      row.querySelectorAll('input[data-bkey]').forEach(inp=>{
+        const bk=inp.dataset.bkey, amt=parseFloat(inp.value);
+        if(!isNaN(amt)&&amt>0) ings[bk]=(ings[bk]||0)+amt;
+      });
+    }else{
+      const amt=parseFloat(row.querySelector("input").value);
+      if(!isNaN(amt)&&amt>0) ings[key]=(ings[key]||0)+amt;
+    }
   });
   if(!Object.keys(ings).length){ toast("성분을 하나 이상 입력하세요"); return; }
   const price=parseFloat($("f-price").value);
@@ -481,7 +527,7 @@ function renderGaps(){
         <div class="gap-items">`+inTier.map(k=>{
           const nm=NUT[k].name;
           const q=encodeURIComponent(nm.replace(/\(.*\)|\/.*/g,"").trim());
-          // ⚠️ 지금은 일반 검색 링크(자리). 전역 후 제휴 추적 링크로 교체.
+          // ⚠️ 지금은 일반 검색 링크(자리). 제휴 가입 후 추적 링크로 교체.
           const iherb=`https://kr.iherb.com/search?kw=${q}`;
           const coupang=`https://www.coupang.com/np/search?q=${q}`;
           return `<div class="gap-item">
