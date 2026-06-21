@@ -10,7 +10,7 @@
   · 저장 안 함(세션 메모리만). 새로고침 시 초기화.
     → 추후 추가 예정: 브라우저 저장 / 구성 텍스트 내보내기·불러오기
   · 사용자 입력형: 제품 성분을 사용자가 직접 입력 → 제품 DB 불필요, 검수 부담 0
-  · 기준 출처: 2020 한국인 영양소 섭취기준+식약처 일일섭취량 ⚠️배포 전 검수
+  · 기준 출처: 2025 한국인 영양소 섭취기준(보건복지부)+식약처 일일섭취량
   · 안전선: 정보 제공만, 처방 금지. 면책 유지
 ═══════════════════════════════════════════════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -38,6 +38,15 @@ header{text-align:center;margin-bottom:18px}
 h1{font-size:22px;font-weight:700;letter-spacing:-.01em;word-break:keep-all}
 h1 em{font-style:normal;color:var(--green)}
 .lede{font-size:13px;color:var(--sub);margin-top:7px;word-break:keep-all}
+.profile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:6px;box-shadow:var(--shadow)}
+.pf-label{font-size:12px;font-weight:700;color:var(--green);margin-bottom:9px}
+.pf-row{display:flex;gap:9px}
+.pf-seg{display:flex;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:3px;flex:0 0 auto}
+.pf-opt{font-family:inherit;font-size:13.5px;font-weight:600;border:none;background:none;color:var(--sub);padding:8px 16px;border-radius:8px;cursor:pointer}
+.pf-opt.on{background:linear-gradient(135deg,var(--mint),var(--green));color:#fff}
+.pf-age{flex:1;font-family:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:10px;padding:0 12px;background:var(--card);color:var(--ink)}
+.pf-age:focus{outline:none;border-color:var(--mint)}
+.pf-hint{font-size:11px;color:var(--sub);margin-top:8px}
 
 .step{display:flex;align-items:baseline;gap:9px;margin:24px 0 12px}
 .step b{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--green);letter-spacing:.06em}
@@ -64,6 +73,17 @@ h1 em{font-style:normal;color:var(--green)}
 .form .f-name{width:100%;font-family:inherit;font-size:15px;font-weight:600;border:1.5px solid var(--line);border-radius:11px;padding:12px;margin-bottom:12px}
 .form .f-name:focus{outline:none;border-color:var(--mint)}
 .form .f-label{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:8px}
+.price-row{display:flex;gap:9px;margin-bottom:8px}
+.pr-field{flex:1;display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:10px;padding:0 11px;background:var(--card)}
+.pr-field label{font-size:12px;color:var(--sub);flex:0 0 auto}
+.pr-field input{flex:1;width:100%;border:none;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;text-align:right;padding:11px 0;background:none;color:var(--ink)}
+.pr-field input:focus{outline:none}
+.pr-field span{font-size:12px;color:var(--sub)}
+.f-hint{font-size:11px;color:var(--sub);margin-bottom:12px}
+.prod .cost{font-size:11.5px;margin-top:5px;margin-left:33px;font-family:'IBM Plex Mono',monospace}
+.prod .cost .good{color:var(--ok);font-weight:700}
+.prod .cost .bad{color:var(--warn);font-weight:700}
+.prod .cost .mid{color:var(--sub);font-weight:700}
 .ing-row{display:flex;gap:7px;margin-bottom:8px}
 .ing-row select,.ing-row input{font-family:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--card);color:var(--ink)}
 .ing-row select{flex:1.3;min-width:0}
@@ -75,6 +95,26 @@ h1 em{font-style:normal;color:var(--green)}
 .form .f-actions button{flex:1;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:11px;padding:12px;cursor:pointer}
 .form .save{background:linear-gradient(135deg,var(--mint),var(--green));color:#fff}
 .form .cancel{background:var(--bg);color:var(--sub);border:1.5px solid var(--line)}
+
+/* 빈 것 발견 카드 */
+#gap-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px;box-shadow:var(--shadow)}
+.gap-head{margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid var(--line)}
+.gap-head .t{font-size:15px;font-weight:700}
+.gap-covered{font-size:12px;color:var(--ok);font-weight:600;margin-bottom:12px}
+.gap-grid{display:flex;flex-wrap:wrap;gap:7px}
+.gap-chip{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:999px;border:1.5px solid #e3c9c6;background:#fdf2f1;color:#b8564d}
+.gap-chip.has{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.gap-none{font-size:13px;color:var(--ok);font-weight:600}
+.gap-items{display:flex;flex-direction:column;gap:8px}
+.tier-group{margin-bottom:14px}
+.tier-label{font-size:12px;font-weight:700;color:var(--green);margin-bottom:7px;padding-bottom:5px;border-bottom:1px dashed var(--line)}
+.gap-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid #ecd9d7;background:#fdf6f5;border-radius:12px;padding:10px 13px}
+.gi-name{font-size:13.5px;font-weight:700;color:#a8504a;flex:0 0 auto}
+.gi-links{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.gi-btn{font-size:11.5px;font-weight:700;text-decoration:none;padding:7px 11px;border-radius:9px;white-space:nowrap}
+.gi-btn.iherb{background:#4a8c3f;color:#fff}
+.gi-btn.coupang{background:#fff;color:#346;border:1.5px solid var(--line)}
+.affil-notice{font-size:10px;color:var(--sub);margin-top:11px;line-height:1.6;word-break:keep-all}
 
 /* 판정 카드 */
 #card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px;box-shadow:var(--shadow)}
@@ -89,6 +129,7 @@ h1 em{font-style:normal;color:var(--green)}
 .rec.ok{border-left:4px solid var(--ok);background:linear-gradient(to right,var(--ok-soft),var(--card) 38%)}
 .rec.low{border-left:4px solid var(--low);background:linear-gradient(to right,var(--low-soft),var(--card) 38%)}
 .rec.low2{border-left:4px solid #d9b54a;background:linear-gradient(to right,#fbf5e3,var(--card) 38%)}
+.rec.info{border-left:4px solid var(--sub);background:linear-gradient(to right,#f0f2f4,var(--card) 38%)}
 .rec .top{display:flex;justify-content:space-between;align-items:center}
 .rec .nm{font-size:14.5px;font-weight:700}
 .rec .amt{font-family:'IBM Plex Mono',monospace;font-size:14.5px;font-weight:700}
@@ -124,6 +165,24 @@ h1 em{font-style:normal;color:var(--green)}
   <p class="lede">먹는 영양제를 등록하고 체크하면 성분 총량을 공식 권장량·상한과 비교해드려요.</p>
 </header>
 
+<div class="profile">
+  <div class="pf-label">내 기준 설정</div>
+  <div class="pf-row">
+    <div class="pf-seg" id="seg-sex">
+      <button class="pf-opt on" data-sex="m">남성</button>
+      <button class="pf-opt" data-sex="f">여성</button>
+    </div>
+    <select class="pf-age" id="sel-age" aria-label="연령대">
+      <option value="0">19–29세</option>
+      <option value="1" selected>30–49세</option>
+      <option value="2">50–64세</option>
+      <option value="3">65–74세</option>
+      <option value="4">75세 이상</option>
+    </select>
+  </div>
+  <div class="pf-hint">선택한 성별·연령대에 맞는 공식 기준으로 판정해드려요.</div>
+</div>
+
 <div class="step"><b>STEP 1</b><h2>내 영양제 등록</h2><span class="hint">라벨 보고 입력</span></div>
 <div class="prod-list" id="prod-list"></div>
 <button class="add-prod-btn" id="add-prod">+ 영양제 추가하기</button>
@@ -131,6 +190,11 @@ h1 em{font-style:normal;color:var(--green)}
 <!-- 제품 추가 폼 -->
 <div class="form" id="form">
   <input type="text" class="f-name" id="f-name" placeholder="영양제 이름 (예: 센트룸 포맨)" aria-label="영양제 이름">
+  <div class="price-row">
+    <div class="pr-field"><label>통 가격</label><input type="number" inputmode="numeric" id="f-price" placeholder="예: 25000"><span>원</span></div>
+    <div class="pr-field"><label>총 개수</label><input type="number" inputmode="numeric" id="f-count" placeholder="예: 90"><span>정</span></div>
+  </div>
+  <div class="f-hint">가격·개수는 선택이에요. 넣으면 가성비도 계산해드려요.</div>
   <div class="f-label">성분 (라벨에 적힌 1회 섭취량 기준)</div>
   <div id="ing-rows"></div>
   <button class="more" id="add-ing">+ 성분 한 줄 더</button>
@@ -140,11 +204,18 @@ h1 em{font-style:normal;color:var(--green)}
   </div>
 </div>
 
-<div class="step"><b>STEP 2</b><h2 id="rec-title">먹은 영양제 합산 판정</h2></div>
+<div class="step"><b>STEP 2</b><h2>안 챙기는 성분 찾기</h2><span class="hint">미포함 = 사실 정보</span></div>
+<div id="gap-card">
+  <div class="gap-head"><span class="t">🔍 내 영양제에 없는 주요 성분</span></div>
+  <div id="gaps"><div class="empty">영양제를 등록·체크하면, 안 들어있는 주요 성분을 짚어드려요.</div></div>
+  <div class="card-foot">등록한 영양제 구성 기준의 사실 정보입니다. 특정 성분 섭취를 권하는 것이 아니며, 필요 여부는 식사·건강상태에 따라 다릅니다.</div>
+</div>
+
+<div class="step"><b>STEP 3</b><h2 id="rec-title">챙기는 성분 섭취량 판정</h2></div>
 <div id="card">
   <div class="card-head"><span class="t">영양소 섭취 판정</span><span class="d" id="card-date">—</span></div>
   <div class="records" id="records"><div class="empty">영양제를 등록하고 체크하면 판정 결과가 여기 나와요.</div></div>
-  <div class="card-foot">공식 기준(보건복지부·식약처) 대비 · 일반 성인 기준 · 정보 제공용</div>
+  <div class="card-foot" id="card-foot">2025 한국인 영양소 섭취기준(보건복지부)·식약처 일일섭취량 대비 · 정보 제공용</div>
 </div>
 
 <div class="actions">
@@ -155,7 +226,7 @@ h1 em{font-style:normal;color:var(--green)}
 <div class="ad-slot">광고 자리 · 전역 후 애드센스 (현재 비활성)</div>
 
 <p class="disclaimer">
-  ⚕️ 본 도구는 2020 한국인 영양소 섭취기준(보건복지부)·식약처 일일섭취량 기반 <b>일반 정보 제공용</b>이며
+  ⚕️ 본 도구는 2025 한국인 영양소 섭취기준(보건복지부·한국영양학회)·식약처 일일섭취량 기반 <b>일반 정보 제공용</b>이며
   의학적 진단·처방이 아닙니다. 권장량·상한은 일반 성인 기준으로 연령·성별·건강상태·임신/수유에 따라 다릅니다.
   복용 약·질환이 있으면 의사·약사와 상담하세요. 입력값은 저장되지 않으며(새로고침 시 초기화), 결과는 복사·이미지로 보관하세요.
 </p>
@@ -164,30 +235,107 @@ h1 em{font-style:normal;color:var(--green)}
 <div class="toast" id="toast">완료</div>
 
 <script>
-/* ═══ 영양소 기준 DB (⚠️ 배포 전 검수) ═══ */
+/* ═══ 영양소 기준 DB (2025 한국인 영양소 섭취기준 반영) ═══
+   출처: 보건복지부·한국영양학회, 2025 KDRI 요약표 (2025.12)
+   tier: 1=입문 2=기초 3=목적별 4=고수
+   rec/ul: 기본값(성별·연령 차이 없을 때). 연령 인덱스 0~4 = [19-29,30-49,50-64,65-74,75+]
+   recByGroup/ulByGroup: 성별·연령별로 다른 성분만 지정 { m:[5개], f:[5개] }
+   값 우선순위: 권장섭취량(RNI) > 충분섭취량(AI). null이면 공식기준 없음(판정 생략).
+   ※ 비타민D는 사용 편의상 IU 표기(1µg=40IU): 10µg→400, 15µg→600, UL 100µg→4000
+   ※ 비KDRI 기능성원료(식약처 일일섭취량): 유산균·밀크씨슬·루테인·코큐텐
+   ※ B군복합·K2·글루타치온: 단일 공식기준 없음 → null */
 const NUT = {
-  vitC:{name:"비타민C",unit:"mg",rec:100,ul:2000},
-  vitD:{name:"비타민D",unit:"IU",rec:600,ul:4000},
-  vitA:{name:"비타민A",unit:"µg",rec:700,ul:3000},
-  vitE:{name:"비타민E",unit:"mg",rec:12,ul:540},
-  vitB1:{name:"비타민B1",unit:"mg",rec:1.2,ul:null},
-  vitB2:{name:"비타민B2",unit:"mg",rec:1.4,ul:null},
-  vitB6:{name:"비타민B6",unit:"mg",rec:1.5,ul:100},
-  vitB12:{name:"비타민B12",unit:"µg",rec:2.4,ul:null},
-  folate:{name:"엽산",unit:"µg",rec:400,ul:1000},
-  niacin:{name:"나이아신",unit:"mg",rec:15,ul:35},
-  ca:{name:"칼슘",unit:"mg",rec:750,ul:2500},
-  mg:{name:"마그네슘",unit:"mg",rec:330,ul:350},
-  fe:{name:"철분",unit:"mg",rec:12,ul:45},
-  zn:{name:"아연",unit:"mg",rec:9,ul:35},
-  se:{name:"셀레늄",unit:"µg",rec:60,ul:400},
-  k:{name:"칼륨",unit:"mg",rec:3500,ul:null},
-  omega3:{name:"오메가3",unit:"mg",rec:1000,ul:2000},
+  // ── 1단계: 입문 ──
+  vitBcomplex:{name:"비타민B군(복합)",unit:"mg",rec:null,ul:null,tier:1},
+  vitC:{name:"비타민C",unit:"mg",rec:100,ul:2000,tier:1},           // 성인 전체 동일
+  probio:{name:"유산균",unit:"억 CFU",rec:100,ul:null,tier:1},      // 식약처(비KDRI)
+  // ── 2단계: 기초 ──
+  vitD:{name:"비타민D",unit:"IU",rec:400,ul:4000,tier:2,
+        recByGroup:{ m:[400,400,400,600,600], f:[400,400,400,600,600] }}, // 65세+ 15µg
+  omega3:{name:"오메가3(EPA+DHA)",unit:"mg",rec:250,ul:null,tier:2}, // AI 250, 공식 UL 없음
+  // ── 3단계: 목적별 ──
+  vitA:{name:"비타민A",unit:"µg",rec:800,ul:3000,tier:3,
+        recByGroup:{ m:[800,800,750,700,700], f:[650,650,600,600,600] }},
+  vitE:{name:"비타민E",unit:"mg",rec:12,ul:540,tier:3},             // 성인 전체 동일
+  mg:{name:"마그네슘",unit:"mg",rec:360,ul:350,tier:3,              // UL=식품외(보충제) 350
+      recByGroup:{ m:[360,380,380,380,380], f:[280,280,280,280,280] }},
+  ca:{name:"칼슘",unit:"mg",rec:800,ul:2500,tier:3,
+      recByGroup:{ m:[800,800,800,800,800], f:[650,650,750,750,750] },
+      ulByGroup:{ m:[3000,2500,2500,2500,2500], f:[2500,2000,2000,2000,2000] }},
+  zn:{name:"아연",unit:"mg",rec:10,ul:35,tier:3,
+      recByGroup:{ m:[10,10,10,9,9], f:[8,8,8,7,7] }},
+  silymarin:{name:"밀크씨슬(실리마린)",unit:"mg",rec:130,ul:null,tier:3}, // 식약처
+  lutein:{name:"루테인/지아잔틴",unit:"mg",rec:10,ul:20,tier:3},    // 식약처
+  // ── 4단계: 고수 ──
+  vitK2:{name:"비타민K2",unit:"µg",rec:null,ul:null,tier:4},        // K2단독 공식기준 없음
+  coq10:{name:"코엔자임Q10",unit:"mg",rec:90,ul:null,tier:4},       // 식약처 90~100
+  glutathione:{name:"글루타치온",unit:"mg",rec:null,ul:null,tier:4},
+  fe:{name:"철분",unit:"mg",rec:10,ul:45,tier:4,
+      recByGroup:{ m:[8,8,8,8,7], f:[12,12,7,6,6] }},               // 가임기 여성↑, 폐경후↓
+  se:{name:"셀레늄",unit:"µg",rec:60,ul:400,tier:4},                // 성인 전체 동일
+  cu:{name:"구리",unit:"mg",rec:0.85,ul:10,tier:4,                  // KDRI µg→mg 환산
+      recByGroup:{ m:[0.85,0.85,0.85,0.8,0.8], f:[0.65,0.65,0.65,0.6,0.6] }},
+  mn:{name:"망간",unit:"mg",rec:4,ul:11,tier:4,
+      recByGroup:{ m:[4,4,4,4,4], f:[3.5,3.5,3.5,3.5,3.5] }},
+};
+
+/* 단계 메타 */
+const TIERS={
+  1:{name:"입문",emoji:"🌱"},
+  2:{name:"기초",emoji:"🧱"},
+  3:{name:"목적별",emoji:"🎯"},
+  4:{name:"고수",emoji:"🏆"},
+};
+
+/* ═══ 성분별 기준 단가 (원 / 1단위) — 단일제 시장가 기준 ═══
+   ⚠️ 임시 추정값! 배포 전 실제 단일제 가격 조사해서 검수·조정할 것.
+   계산법: (단일제 통가격 ÷ 총개수 ÷ 1정당 함량) 으로 1단위당 원 역산
+   이 값들이 곧 "가성비 판정의 기준" = 이 사이트의 신뢰 포인트 */
+const PRICE = {
+  vitC:0.5, vitD:0.8, vitA:1.0, vitE:2.0,
+  folate:0.3, ca:0.1, mg:0.2,
+  fe:0.8, zn:1.2, se:0.5, omega3:0.02,
+  lutein:30.0, silymarin:0.3, cu:5.0, mn:1.0,
+  // 기준단가 미정(추정 어려움): vitBcomplex, probio, vitK2, coq10, glutathione
 };
 
 const $ = id => document.getElementById(id);
-let products = [];   // {name, ings:{key:amt}, taken:bool} — 세션 메모리만
+let products = [];   // {name, ings:{key:amt}, price, count, taken} — 세션 메모리만
 let pid = 0;
+let profile = { sex:"m", age:1 };   // age = 연령대 인덱스 0~4 (기본 30-49세)
+
+/* 성별·연령 반영 권장량 — recByGroup 있으면 그 값, 없으면 기본 rec */
+function getRec(key){
+  const v=NUT[key];
+  if(v.recByGroup && v.recByGroup[profile.sex]){
+    const g=v.recByGroup[profile.sex][profile.age];
+    if(g!=null) return g;
+  }
+  return v.rec;
+}
+/* 성별·연령 반영 상한 — ulByGroup 있으면 그 값, 없으면 기본 ul */
+function getUl(key){
+  const v=NUT[key];
+  if(v.ulByGroup && v.ulByGroup[profile.sex]){
+    const g=v.ulByGroup[profile.sex][profile.age];
+    if(g!=null) return g;
+  }
+  return v.ul;
+}
+
+/* 한 통 가성비 계산 */
+function valueOf(p){
+  if(!p.price || !p.count) return null;          // 가격·개수 없으면 가성비 계산 안 함
+  let worth = 0;                                  // 한 통의 환산 가치(원)
+  Object.entries(p.ings).forEach(([k,amt])=>{
+    if(PRICE[k]) worth += amt * p.count * PRICE[k];
+  });
+  return {
+    worth,                                        // 성분 따로 샀을 때 가치
+    ratio: worth / p.price,                       // 1 넘으면 이득
+    perServing: p.price / p.count,                // 1회당 가격
+  };
+}
 
 $("card-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric"});
 
@@ -209,6 +357,7 @@ function newIngRow(){
 $("add-prod").addEventListener("click",()=>{
   $("form").classList.add("on");
   $("f-name").value="";
+  $("f-price").value=""; $("f-count").value="";
   $("ing-rows").innerHTML="";
   $("ing-rows").appendChild(newIngRow());
   $("add-prod").style.display="none";
@@ -227,7 +376,10 @@ $("f-save").addEventListener("click",()=>{
     if(!isNaN(amt)&&amt>0) ings[key]=(ings[key]||0)+amt;
   });
   if(!Object.keys(ings).length){ toast("성분을 하나 이상 입력하세요"); return; }
-  products.push({id:++pid, name, ings, taken:true});
+  const price=parseFloat($("f-price").value);
+  const count=parseFloat($("f-count").value);
+  products.push({id:++pid, name, ings,
+    price:isNaN(price)?null:price, count:isNaN(count)?null:count, taken:true});
   closeForm(); renderProducts(); renderCard(); toast("등록됐어요");
 });
 
@@ -237,6 +389,14 @@ function renderProducts(){
   box.innerHTML="";
   products.forEach(p=>{
     const ingStr=Object.entries(p.ings).map(([k,v])=>`${NUT[k].name} ${v}${NUT[k].unit}`).join(" · ");
+    const val=valueOf(p);
+    let costHTML="";
+    if(val){
+      const cls = val.ratio>=1.2 ? "good" : val.ratio>=0.8 ? "mid" : "bad";
+      const label = val.ratio>=1.2 ? "가성비 좋음 👍" : val.ratio>=0.8 ? "적정" : "비싼 편";
+      costHTML=`<div class="cost">💰 1회 ${Math.round(val.perServing).toLocaleString()}원 ·
+        성분가치/가격 <span class="${cls}">${val.ratio.toFixed(2)}배 (${label})</span></div>`;
+    }
     const div=document.createElement("div");
     div.className="prod"+(p.taken?" on":"");
     div.innerHTML=`<div class="ph">
@@ -244,7 +404,7 @@ function renderProducts(){
         <span class="pn" data-id="${p.id}">${p.name}</span>
         <button class="pdel" data-id="${p.id}" aria-label="삭제">×</button>
       </div>
-      <div class="ings">${ingStr}</div>`;
+      <div class="ings">${ingStr}</div>${costHTML}`;
     box.appendChild(div);
   });
   // 체크 토글
@@ -265,15 +425,21 @@ function renderProducts(){
 /* ───── 판정 ───── */
 function judge(key,total){
   const v=NUT[key];
-  if(v.ul){
+  const rec=getRec(key);
+  const ul=getUl(key);
+  if(rec==null){
+    // ── 공식 권장 기준 없는 성분: 판정 생략, 섭취량만 표시 ──
+    return {cls:"info",txt:"공식 섭취기준 정보 없음",pct:35,color:"var(--sub)"};
+  }
+  if(ul){
     // ── 상한 기준 있는 영양소 ──
-    if(total>v.ul) return {cls:"warn",txt:"상한 초과 ⚠️",pct:100,color:"var(--warn)"};
-    if(total>=v.ul*0.7) return {cls:"caution",txt:"상한에 근접",pct:total/v.ul*100,color:"var(--caution)"};
-    if(total<v.rec*0.5) return {cls:"low",txt:"권장량보다 적음",pct:Math.max(total/v.rec*50,6),color:"var(--low)"};
-    return {cls:"ok",txt:"적정 범위 ✓",pct:Math.max(total/v.ul*100,8),color:"var(--ok)"};
+    if(total>ul) return {cls:"warn",txt:"상한 초과 ⚠️",pct:100,color:"var(--warn)"};
+    if(total>=ul*0.7) return {cls:"caution",txt:"상한에 근접",pct:total/ul*100,color:"var(--caution)"};
+    if(total<rec*0.5) return {cls:"low",txt:"권장량보다 적음",pct:Math.max(total/rec*50,6),color:"var(--low)"};
+    return {cls:"ok",txt:"적정 범위 ✓",pct:Math.max(total/ul*100,8),color:"var(--ok)"};
   } else {
     // ── 상한 기준 없는 영양소 (권장 배수로 판정) ──
-    const ratio = total / v.rec;
+    const ratio = total / rec;
     if(ratio >= 10) return {cls:"caution",txt:"권장량 크게 초과 (상한 기준 없음)",pct:100,color:"var(--caution)"};
     if(ratio >= 3)  return {cls:"low2",txt:"권장량보다 많음 (상한 기준 없음)",pct:Math.min(ratio/10*100,100),color:"#c79a2e"};
     if(ratio < 0.5) return {cls:"low",txt:"권장량보다 적음",pct:Math.max(ratio*50,6),color:"var(--low)"};
@@ -289,7 +455,51 @@ function currentSum(){
   return sum;
 }
 
+/* 빈 것 발견: 체크된 영양제에 '들어있지 않은' 주요 성분을 사실로 표시 */
+function renderGaps(){
+  const box=$("gaps");
+  const taken=products.filter(p=>p.taken);
+  if(!taken.length){ box.innerHTML=`<div class="empty">영양제를 등록·체크하면, 안 들어있는 주요 성분을 짚어드려요.</div>`; return; }
+  const sum=currentSum();
+  const have=Object.keys(sum);
+  const missing=Object.keys(NUT).filter(k=>!have.includes(k));
+
+  let html="";
+  if(have.length){
+    html+=`<div class="gap-covered">✓ 챙기는 성분 ${have.length}개: ${have.map(k=>NUT[k].name).join(", ")}</div>`;
+  }
+  if(!missing.length){
+    html+=`<div class="gap-none">주요 ${Object.keys(NUT).length}개 성분이 모두 들어있어요 👍</div>`;
+  }else{
+    html+=`<div style="font-size:12px;color:var(--sub);margin-bottom:13px">아래 성분은 등록한 영양제에 <b>들어있지 않아요</b> (미포함). 단계별로 정리했어요 — 입문 단계부터 채워보세요.</div>`;
+    [1,2,3,4].forEach(tier=>{
+      const inTier=missing.filter(k=>NUT[k].tier===tier);
+      if(!inTier.length) return;
+      const T=TIERS[tier];
+      html+=`<div class="tier-group">
+        <div class="tier-label">${T.emoji} ${tier}단계 · ${T.name}</div>
+        <div class="gap-items">`+inTier.map(k=>{
+          const nm=NUT[k].name;
+          const q=encodeURIComponent(nm.replace(/\(.*\)|\/.*/g,"").trim());
+          // ⚠️ 지금은 일반 검색 링크(자리). 전역 후 제휴 추적 링크로 교체.
+          const iherb=`https://kr.iherb.com/search?kw=${q}`;
+          const coupang=`https://www.coupang.com/np/search?q=${q}`;
+          return `<div class="gap-item">
+            <span class="gi-name">${nm}</span>
+            <div class="gi-links">
+              <a class="gi-btn iherb" href="${iherb}" target="_blank" rel="noopener nofollow">아이허브</a>
+              <a class="gi-btn coupang" href="${coupang}" target="_blank" rel="noopener nofollow">쿠팡</a>
+            </div>
+          </div>`;
+        }).join("")+`</div></div>`;
+    });
+    html+=`<div class="affil-notice">※ 위 링크는 제휴 링크 자리입니다. 향후 링크를 통한 구매 시 수수료를 받을 수 있으며, 구매자에게 추가 비용은 없습니다. 특정 제품 구매를 권유하는 것이 아닙니다.</div>`;
+  }
+  box.innerHTML=html;
+}
+
 function renderCard(){
+  renderGaps();
   const sum=currentSum();
   const keys=Object.keys(sum);
   const box=$("records");
@@ -297,10 +507,17 @@ function renderCard(){
   box.innerHTML="";
   keys.forEach(key=>{
     const v=NUT[key],total=sum[key],j=judge(key,total);
-    const scaleR=v.ul?"상한 "+v.ul.toLocaleString()+v.unit:"권장 "+v.rec.toLocaleString()+v.unit+" (상한 없음)";
-    const refTxt=v.ul
-      ? `권장 ${v.rec.toLocaleString()}${v.unit} / 상한 ${v.ul.toLocaleString()}${v.unit}`
-      : `권장 ${v.rec.toLocaleString()}${v.unit} · 상한 기준 없음`;
+    const rec=getRec(key), ul=getUl(key);
+    let scaleR, refTxt;
+    if(rec==null){
+      scaleR="공식 섭취기준 정보 없음";
+      refTxt="공식 권장·상한 기준 없음 (섭취량만 표시)";
+    }else{
+      scaleR=ul?"상한 "+ul.toLocaleString()+v.unit:"권장 "+rec.toLocaleString()+v.unit+" (상한 없음)";
+      refTxt=ul
+        ? `권장 ${rec.toLocaleString()}${v.unit} / 상한 ${ul.toLocaleString()}${v.unit}`
+        : `권장 ${rec.toLocaleString()}${v.unit} · 상한 기준 없음`;
+    }
     const div=document.createElement("div");
     div.className=`rec ${j.cls}`;
     div.innerHTML=`<div class="top"><span class="nm">${v.name}</span><span class="amt">${total.toLocaleString()}${v.unit}</span></div>
@@ -319,11 +536,14 @@ $("btn-copy").addEventListener("click",async()=>{
   if(!keys.length){ toast("먼저 영양제를 체크하세요"); return; }
   const date=new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric"});
   const taken=products.filter(p=>p.taken).map(p=>p.name).join(", ");
-  let lines=[`📋 영양소 섭취 판정 (${date})`,`먹은 영양제: ${taken}`,"━━━━━━━━━━━━"];
+  const ageLabels=["19-29세","30-49세","50-64세","65-74세","75세+"];
+  const pfTxt=(profile.sex==="m"?"남성":"여성")+" "+ageLabels[profile.age];
+  let lines=[`📋 영양소 섭취 판정 (${date})`,`기준: ${pfTxt}`,`먹은 영양제: ${taken}`,"━━━━━━━━━━━━"];
   keys.forEach(key=>{
     const v=NUT[key],total=sum[key],j=judge(key,total);
-    const mark=j.cls==="warn"?"⚠️":j.cls==="caution"?"🔶":j.cls==="low2"?"🟡":j.cls==="low"?"🔹":"✅";
-    const ref=v.ul?`권장 ${v.rec.toLocaleString()}${v.unit}/상한 ${v.ul.toLocaleString()}${v.unit}`:`권장 ${v.rec.toLocaleString()}${v.unit}·상한 없음`;
+    const rec=getRec(key), ul=getUl(key);
+    const mark=j.cls==="warn"?"⚠️":j.cls==="caution"?"🔶":j.cls==="low2"?"🟡":j.cls==="low"?"🔹":j.cls==="info"?"ℹ️":"✅";
+    const ref=rec==null?"공식 기준 없음":(ul?`권장 ${rec.toLocaleString()}${v.unit}/상한 ${ul.toLocaleString()}${v.unit}`:`권장 ${rec.toLocaleString()}${v.unit}·상한 없음`);
     lines.push(`${mark} ${v.name} ${total.toLocaleString()}${v.unit} — ${j.txt} (${ref})`);
   });
   lines.push("━━━━━━━━━━━━","※ 공식 기준 대비 일반 정보 · 처방 아님");
@@ -341,6 +561,20 @@ $("btn-img").addEventListener("click",async()=>{
     const a=document.createElement("a");a.download="nutrition-check.png";a.href=canvas.toDataURL("image/png");a.click();
     toast("이미지 저장됐어요 🖼️");
   }catch(e){ toast("저장 실패 — 스크린샷 이용"); }
+});
+
+/* 프로필: 성별·연령 선택 → 기준 갱신 */
+$("seg-sex").querySelectorAll(".pf-opt").forEach(b=>{
+  b.addEventListener("click",()=>{
+    $("seg-sex").querySelectorAll(".pf-opt").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    profile.sex=b.dataset.sex;
+    renderCard();
+  });
+});
+$("sel-age").addEventListener("change",()=>{
+  profile.age=parseInt($("sel-age").value);
+  renderCard();
 });
 
 renderProducts(); renderCard();
