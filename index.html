@@ -177,7 +177,7 @@ h1 em{font-style:normal;color:var(--green)}
 <div class="wrap">
 
 <header>
-  <div class="mark">NUTRITION CHECK</div>
+  <div class="mark">GAPCHAE</div>
   <h1>내 영양제 성분,<br><em>기준</em>에 맞을까?</h1>
   <p class="lede">먹는 영양제를 등록하고 체크하면 성분 총량을 공식 권장량·상한과 비교해드려요.</p>
 </header>
@@ -619,7 +619,7 @@ $("btn-img").addEventListener("click",async()=>{
   if(!Object.keys(currentSum()).length){ toast("먼저 영양제를 체크하세요"); return; }
   try{
     const canvas=await html2canvas($("card"),{backgroundColor:"#f4f8f6",scale:2});
-    const a=document.createElement("a");a.download="nutrition-check.png";a.href=canvas.toDataURL("image/png");a.click();
+    const a=document.createElement("a");a.download="gapchae.png";a.href=canvas.toDataURL("image/png");a.click();
     toast("이미지 저장됐어요 🖼️");
   }catch(e){ toast("저장 실패 — 스크린샷 이용"); }
 });
