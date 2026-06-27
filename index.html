@@ -77,6 +77,12 @@ h1 em{font-style:normal;color:var(--green)}
 .form.on{display:block}
 .form .f-name{width:100%;font-family:inherit;font-size:15px;font-weight:600;border:1.5px solid var(--line);border-radius:11px;padding:12px;margin-bottom:12px}
 .form .f-name:focus{outline:none;border-color:var(--mint)}
+.search-drop{display:none;position:relative;margin:-8px 0 12px;background:var(--card);border:1.5px solid var(--mint);border-radius:11px;max-height:220px;overflow-y:auto;box-shadow:var(--shadow)}
+.search-drop.show{display:block}
+.search-drop .s-item{padding:11px 13px;font-size:13.5px;cursor:pointer;border-bottom:1px solid var(--line)}
+.search-drop .s-item:last-child{border-bottom:none}
+.search-drop .s-item:hover{background:var(--mint-soft)}
+.search-drop .s-empty{padding:11px 13px;font-size:12.5px;color:var(--sub)}
 .form .f-label{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:8px}
 .price-row{display:flex;gap:9px;margin-bottom:8px}
 .pr-field{flex:1;display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:10px;padding:0 11px;background:var(--card)}
@@ -207,6 +213,7 @@ h1 em{font-style:normal;color:var(--green)}
 <!-- 제품 추가 폼 -->
 <div class="form" id="form">
   <input type="text" class="f-name" id="f-name" placeholder="영양제 이름 (예: 센트룸 포맨)" aria-label="영양제 이름">
+  <div class="search-drop" id="search-drop"></div>
   <div class="price-row">
     <div class="pr-field"><label>통 가격</label><input type="number" inputmode="numeric" id="f-price" placeholder="예: 25000"><span>원</span></div>
     <div class="pr-field"><label>총 개수</label><input type="number" inputmode="numeric" id="f-count" placeholder="예: 90"><span>정</span></div>
@@ -409,6 +416,70 @@ function newIngRow(){
   row.querySelector(".x").addEventListener("click",()=>row.remove());
   return row;
 }
+
+/* ───── 제품 DB 검색 → 자동입력 (식약처 데이터 기반) ───── */
+let PRODUCT_DB = null;
+function loadProductDB(){
+  if(PRODUCT_DB) return; // 이미 불러왔으면 다시 안 함
+  fetch("./nutrition-search.json")
+    .then(r=>r.json())
+    .then(data=>{ PRODUCT_DB = data; })
+    .catch(()=>{ PRODUCT_DB = []; }); // 실패해도 수동입력은 그대로 되게
+}
+// API 필드명 → 도구의 NUT 키 매핑. vitD는 단위가 달라서(µg→IU) 변환 필요(×40)
+const API_TO_NUT = [
+  {api:"ca",      nut:"ca",     conv:v=>v},
+  {api:"fe",      nut:"fe",     conv:v=>v},
+  {api:"vitaRae", nut:"vitA",   conv:v=>v},
+  {api:"thia",    nut:"b1",     conv:v=>v},
+  {api:"ribf",    nut:"b2",     conv:v=>v},
+  {api:"nia",     nut:"niacin", conv:v=>v},
+  {api:"vitc",    nut:"vitC",   conv:v=>v},
+  {api:"vitd",    nut:"vitD",   conv:v=>v*40}
+];
+$("f-name").addEventListener("focus", loadProductDB); // 이름칸 클릭하는 순간 데이터 준비
+$("f-name").addEventListener("input", ()=>{
+  const q = $("f-name").value.trim();
+  const drop = $("search-drop");
+  if(q.length < 2 || !PRODUCT_DB){ drop.classList.remove("show"); return; }
+  const hits = PRODUCT_DB.filter(p => p.name.includes(q)).slice(0, 8); // 최대 8개만
+  if(hits.length === 0){
+    drop.innerHTML = `<div class="s-empty">검색 결과 없음 — 직접 입력하세요</div>`;
+    drop.classList.add("show");
+    return;
+  }
+  drop.innerHTML = hits.map((p,i) => `<div class="s-item" data-idx="${i}">${p.name}</div>`).join("");
+  drop.classList.add("show");
+  drop.querySelectorAll(".s-item").forEach((el,i)=>{
+    el.addEventListener("click", ()=>applyProduct(hits[i]));
+  });
+});
+document.addEventListener("click", (e)=>{ // 다른 곳 클릭하면 드롭다운 닫기
+  if(e.target.id !== "f-name" && !e.target.closest("#search-drop")){
+    $("search-drop").classList.remove("show");
+  }
+});
+function applyProduct(p){
+  $("f-name").value = p.name;
+  $("search-drop").classList.remove("show");
+  $("ing-rows").innerHTML = "";
+  let filled = 0;
+  API_TO_NUT.forEach(({api,nut,conv})=>{
+    const raw = p[api];
+    if(raw && raw > 0){
+      const row = newIngRow();
+      const sel = row.querySelector("select");
+      sel.value = nut;
+      sel.dispatchEvent(new Event("change")); // bgroup 모드 해제 등 화면 갱신
+      row.querySelector(".ing-amt").value = Math.round(conv(raw)*100)/100;
+      $("ing-rows").appendChild(row);
+      filled++;
+    }
+  });
+  if(filled === 0) $("ing-rows").appendChild(newIngRow());
+  toast(filled>0 ? `${filled}개 성분 자동입력 (나머지는 직접 추가)` : "이 제품은 자동입력 정보 없음 — 직접 입력하세요");
+}
+
 $("add-prod").addEventListener("click",()=>{
   $("form").classList.add("on");
   $("f-name").value="";
