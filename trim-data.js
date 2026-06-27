@@ -1,19 +1,24 @@
 const fs = require("fs");
 const items = JSON.parse(fs.readFileSync("nutrition-db.json", "utf8"));
 
-// 필요한 것만 골라서 가볍게 만들기
+function parseTimes(s){
+  const n = parseInt(String(s).replace(/[^0-9]/g, ""));
+  return (!n || n < 1) ? 1 : n;
+}
+
 const trimmed = items
-  .filter(item => item.foodNm) // 이름 없는 것 제외
+  .filter(item => item.foodNm)
   .map(item => ({
     name: item.foodNm,
-    ca: parseFloat(item.ca) || 0,      // 칼슘
-    fe: parseFloat(item.fe) || 0,      // 철
-    vitaRae: parseFloat(item.vitaRae) || 0, // 비타민A
-    thia: parseFloat(item.thia) || 0,  // 비타민B1
-    ribf: parseFloat(item.ribf) || 0,  // 비타민B2
-    nia: parseFloat(item.nia) || 0,    // 나이아신
-    vitc: parseFloat(item.vitc) || 0,  // 비타민C
-    vitd: parseFloat(item.vitd) || 0   // 비타민D
+    times: parseTimes(item.onetmIntkNmtm), // 권장 횟수 (기본값으로만 씀, 곱하지 않음)
+    ca:      parseFloat(item.ca) || 0,      // 1회분량 그대로
+    fe:      parseFloat(item.fe) || 0,
+    vitaRae: parseFloat(item.vitaRae) || 0,
+    thia:    parseFloat(item.thia) || 0,
+    ribf:    parseFloat(item.ribf) || 0,
+    nia:     parseFloat(item.nia) || 0,
+    vitc:    parseFloat(item.vitc) || 0,
+    vitd:    parseFloat(item.vitd) || 0
   }));
 
 fs.writeFileSync("nutrition-search.json", JSON.stringify(trimmed));

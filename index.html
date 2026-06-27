@@ -218,7 +218,10 @@ h1 em{font-style:normal;color:var(--green)}
     <div class="pr-field"><label>통 가격</label><input type="number" inputmode="numeric" id="f-price" placeholder="예: 25000"><span>원</span></div>
     <div class="pr-field"><label>총 개수</label><input type="number" inputmode="numeric" id="f-count" placeholder="예: 90"><span>정</span></div>
   </div>
-  <div class="f-hint">가격·개수는 선택이에요. 넣으면 1회당 가격을 계산해드려요.</div>
+  <div class="price-row">
+    <div class="pr-field"><label>하루 섭취</label><input type="number" inputmode="numeric" id="f-daily" value="1" min="1"><span>회</span></div>
+  </div>
+  <div class="f-hint">"총 개수"는 통 안의 전체 개수(가격 계산용), "하루 섭취"는 하루에 몇 번 먹는지예요. 성분은 1회분량으로 입력하면 하루 섭취 횟수만큼 자동으로 곱해져요.</div>
   <div class="f-label">성분 (라벨에 적힌 1회 섭취량 기준)</div>
   <div id="ing-rows"></div>
   <button class="more" id="add-ing">+ 성분 한 줄 더</button>
@@ -463,6 +466,7 @@ function applyProduct(p){
   $("f-name").value = p.name;
   $("search-drop").classList.remove("show");
   $("ing-rows").innerHTML = "";
+  $("f-daily").value = p.times || 1; // 라벨 권장 횟수를 기본값으로 (사용자가 다르게 먹으면 직접 수정)
   let filled = 0;
   API_TO_NUT.forEach(({api,nut,conv})=>{
     const raw = p[api];
@@ -471,19 +475,20 @@ function applyProduct(p){
       const sel = row.querySelector("select");
       sel.value = nut;
       sel.dispatchEvent(new Event("change")); // bgroup 모드 해제 등 화면 갱신
-      row.querySelector(".ing-amt").value = Math.round(conv(raw)*100)/100;
+      row.querySelector(".ing-amt").value = Math.round(conv(raw)*100)/100; // 1회분량 그대로
       $("ing-rows").appendChild(row);
       filled++;
     }
   });
   if(filled === 0) $("ing-rows").appendChild(newIngRow());
-  toast(filled>0 ? `${filled}개 성분 자동입력 (나머지는 직접 추가)` : "이 제품은 자동입력 정보 없음 — 직접 입력하세요");
+  const timesNote = p.times > 1 ? ` (하루 ${p.times}회로 미리 입력함, 다르면 고치세요)` : "";
+  toast(filled>0 ? `${filled}개 성분 자동입력${timesNote}` : "이 제품은 자동입력 정보 없음 — 직접 입력하세요");
 }
 
 $("add-prod").addEventListener("click",()=>{
   $("form").classList.add("on");
   $("f-name").value="";
-  $("f-price").value=""; $("f-count").value="";
+  $("f-price").value=""; $("f-count").value=""; $("f-daily").value="1";
   $("ing-rows").innerHTML="";
   $("ing-rows").appendChild(newIngRow());
   $("add-prod").style.display="none";
@@ -495,6 +500,7 @@ function closeForm(){ $("form").classList.remove("on"); $("add-prod").style.disp
 
 $("f-save").addEventListener("click",()=>{
   const name=$("f-name").value.trim() || "내 영양제";
+  const daily=parseFloat($("f-daily").value) || 1; // 하루 몇 번 먹는지 (기본 1)
   const ings={};
   $("ing-rows").querySelectorAll(".ing-row").forEach(row=>{
     const key=row.querySelector("select").value;
@@ -502,11 +508,11 @@ $("f-save").addEventListener("click",()=>{
       // B군 묶음: 각 B비타민 칸을 개별 성분으로 저장
       row.querySelectorAll('input[data-bkey]').forEach(inp=>{
         const bk=inp.dataset.bkey, amt=parseFloat(inp.value);
-        if(!isNaN(amt)&&amt>0) ings[bk]=(ings[bk]||0)+amt;
+        if(!isNaN(amt)&&amt>0) ings[bk]=(ings[bk]||0)+amt*daily;
       });
     }else{
       const amt=parseFloat(row.querySelector("input").value);
-      if(!isNaN(amt)&&amt>0) ings[key]=(ings[key]||0)+amt;
+      if(!isNaN(amt)&&amt>0) ings[key]=(ings[key]||0)+amt*daily;
     }
   });
   if(!Object.keys(ings).length){ toast("성분을 하나 이상 입력하세요"); return; }
