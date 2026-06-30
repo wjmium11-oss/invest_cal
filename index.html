@@ -429,16 +429,27 @@ function loadProductDB(){
     .then(data=>{ PRODUCT_DB = data; })
     .catch(()=>{ PRODUCT_DB = []; }); // 실패해도 수동입력은 그대로 되게
 }
-// API 필드명 → 도구의 NUT 키 매핑. vitD는 단위가 달라서(µg→IU) 변환 필요(×40)
+// API 필드명 → 도구의 NUT 키 매핑. vitD는 단위가 달라서(µg→IU) 변환 필요(×40), 구리(µg→mg) 변환 필요(÷1000)
 const API_TO_NUT = [
-  {api:"ca",      nut:"ca",     conv:v=>v},
-  {api:"fe",      nut:"fe",     conv:v=>v},
-  {api:"vitaRae", nut:"vitA",   conv:v=>v},
-  {api:"thia",    nut:"b1",     conv:v=>v},
-  {api:"ribf",    nut:"b2",     conv:v=>v},
-  {api:"nia",     nut:"niacin", conv:v=>v},
-  {api:"vitc",    nut:"vitC",   conv:v=>v},
-  {api:"vitd",    nut:"vitD",   conv:v=>v*40}
+  {api:"ca",      nut:"ca",          conv:v=>v},
+  {api:"fe",      nut:"fe",          conv:v=>v},
+  {api:"vitA",    nut:"vitA",        conv:v=>v},
+  {api:"b1",      nut:"b1",          conv:v=>v},
+  {api:"b2",      nut:"b2",          conv:v=>v},
+  {api:"b6",      nut:"b6",          conv:v=>v},
+  {api:"b12",     nut:"b12",         conv:v=>v},
+  {api:"folate",  nut:"folate",      conv:v=>v},
+  {api:"niacin",  nut:"niacin",      conv:v=>v},
+  {api:"vitC",    nut:"vitC",        conv:v=>v},
+  {api:"vitD",    nut:"vitD",        conv:v=>v*40},
+  {api:"vitE",    nut:"vitE",        conv:v=>v},
+  {api:"vitK2",   nut:"vitK2",       conv:v=>v},
+  {api:"omega3",  nut:"omega3",      conv:v=>v},
+  {api:"mg",      nut:"mg",          conv:v=>v},
+  {api:"zn",      nut:"zn",          conv:v=>v},
+  {api:"se",      nut:"se",          conv:v=>v},
+  {api:"cu",      nut:"cu",          conv:v=>v/1000},
+  {api:"mn",      nut:"mn",          conv:v=>v}
 ];
 $("f-name").addEventListener("focus", loadProductDB); // 이름칸 클릭하는 순간 데이터 준비
 $("f-name").addEventListener("input", ()=>{
