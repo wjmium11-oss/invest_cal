@@ -25,3 +25,10 @@ _local/*
 # Excel data sources (large binaries)
 *.xlsx
 *.xlxs
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
