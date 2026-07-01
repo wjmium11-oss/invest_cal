@@ -695,7 +695,7 @@ $("f-save").addEventListener("click",()=>{
     price:isNaN(price)?null:price, count:isNaN(count)?null:count, taken:true};
   products.push(newProduct);
   closeForm(); renderProducts(); renderCard(); toast("등록됐어요");
-  if (supabase) {
+  if (supabaseClient) {
     syncAddProduct(newProduct);
   }
 });
@@ -728,7 +728,7 @@ function renderProducts(){
       const p=products.find(x=>x.id==el.dataset.id);
       if (p) {
         p.taken=!p.taken; renderProducts(); renderCard();
-        if (supabase) {
+        if (supabaseClient) {
           syncToggleProduct(p);
         }
       }
@@ -739,7 +739,7 @@ function renderProducts(){
       const prodId = parseInt(b.dataset.id);
       products=products.filter(x=>x.id!=prodId);
       renderProducts(); renderCard();
-      if (supabase) {
+      if (supabaseClient) {
         syncDeleteProduct(prodId);
       }
     });
@@ -902,21 +902,21 @@ $("sel-age").addEventListener("change",()=>{
 });
 
 /* ════════════ Supabase 연동 로직 ════════════ */
-let supabase = null;
+let supabaseClient = null;
 
 function initSupabase() {
   const url = localStorage.getItem('supabase_url') || "https://letitalqfpztihkyhlkv.supabase.co";
   const key = localStorage.getItem('supabase_key') || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxldGl0YWxxZnB6dGloa3lobGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MDc3MTUsImV4cCI6MjA5ODQ4MzcxNX0.Rp6Xee-_XkrwowVj6H5UARfeFmkIPJo9_cLbSgMteK4";
   if (url && key) {
     try {
-      supabase = window.supabase.createClient(url, key);
+      supabaseClient = window.supabase.createClient(url, key);
       return true;
     } catch (e) {
       console.error(e);
       toast("Supabase 초기화 오류");
     }
   }
-  supabase = null;
+  supabaseClient = null;
   return false;
 }
 
@@ -925,13 +925,13 @@ async function checkSession() {
   const bar = $("auth-bar");
   if (!bar) return;
   
-  if (!supabase) {
+  if (!supabaseClient) {
     updateAuthUI(null);
     return;
   }
   
   try {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
     if (error) throw error;
     if (session) {
       updateAuthUI(session.user);
@@ -951,7 +951,7 @@ function updateAuthUI(user) {
   const msg = $("auth-msg");
   const actions = bar.querySelector(".auth-actions");
   
-  if (!supabase) {
+  if (!supabaseClient) {
     msg.innerHTML = "🔒 <b>Supabase 설정이 필요합니다.</b>";
     actions.innerHTML = `
       <button onclick="openSettings()">설정 열기</button>
@@ -974,9 +974,9 @@ function updateAuthUI(user) {
 }
 
 async function loadProductsFromCloud(userId) {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_products')
       .select('*')
       .order('product_id', { ascending: true });
@@ -994,7 +994,7 @@ async function loadProductsFromCloud(userId) {
               await uploadProductToCloud(userId, p);
             }
           }
-          const { data: updatedData } = await supabase
+          const { data: updatedData } = await supabaseClient
             .from('user_products')
             .select('*')
             .order('product_id', { ascending: true });
@@ -1036,7 +1036,7 @@ function mapCloudToLocal(dp) {
 }
 
 async function uploadProductToCloud(userId, p) {
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from('user_products')
     .insert([{
       user_id: userId,
@@ -1051,18 +1051,18 @@ async function uploadProductToCloud(userId, p) {
 }
 
 async function syncAddProduct(p) {
-  if (!supabase) return;
-  const { data: { session } } = await supabase.auth.getSession();
+  if (!supabaseClient) return;
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) {
     await uploadProductToCloud(session.user.id, p);
   }
 }
 
 async function syncDeleteProduct(productId) {
-  if (!supabase) return;
-  const { data: { session } } = await supabase.auth.getSession();
+  if (!supabaseClient) return;
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('user_products')
       .delete()
       .eq('user_id', session.user.id)
@@ -1075,10 +1075,10 @@ async function syncDeleteProduct(productId) {
 }
 
 async function syncToggleProduct(p) {
-  if (!supabase) return;
-  const { data: { session } } = await supabase.auth.getSession();
+  if (!supabaseClient) return;
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('user_products')
       .update({ taken: p.taken })
       .eq('user_id', session.user.id)
@@ -1153,17 +1153,17 @@ $("btn-auth-submit").addEventListener("click", async () => {
     return;
   }
   
-  if (!supabase) return;
+  if (!supabaseClient) return;
   
   try {
     if (currentAuthMode === 'login') {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast("로그인 성공 🎉");
       $("modal-auth").classList.remove("on");
       checkSession();
     } else {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
       if (error) throw error;
       toast("가입 완료! 확인 메일을 체크해주세요.");
       $("modal-auth").classList.remove("on");
@@ -1176,9 +1176,9 @@ $("btn-auth-submit").addEventListener("click", async () => {
 });
 
 async function logout() {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   try {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabaseClient.auth.signOut();
     if (error) throw error;
     products = [];
     pid = 0;
